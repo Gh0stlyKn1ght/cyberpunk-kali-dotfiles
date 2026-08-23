@@ -15,6 +15,7 @@ import { CrtOverlayWindow } from "./modules/crt-overlay.ts"
 import { monitors } from "./modules/monitors.ts"
 import { PowerMenuWindow, togglePowerMenu } from "./modules/power-menu.ts"
 import { startDesktopNotificationBridge } from "./modules/desktop-notifications.ts"
+import { SystemSidePanel } from "./modules/system-sidepanel.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
@@ -79,6 +80,7 @@ App.start({
     } else {
       ProjectedHudWindow(); CornerWidgets()
     }
+    SystemSidePanel()
     WorkspaceTransitionWindow()
     CrtOverlayWindow()
     LauncherWindow()
