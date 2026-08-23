@@ -18,11 +18,14 @@ All three flavors use the same components. Color, glow, surface, warning, grid, 
 - CPU, RAM, disk, workspace, interface, IPv4, and VPN telemetry HUD
 - Kali-aware Kiroshi application launcher
 - application classification for recon, web, network, credentials, exploitation, reverse engineering, forensics, and wireless tools
+- NetWatch overlay for interface, IPv4, gateway, DNS, Wi-Fi, and VPN state
+- Radioport media overlay with playerctl previous / play-pause / next controls
+- DPKG package watcher with Cyberpunk `+ STREET CRED` install notifications
 - Red / Cyan / Amber runtime switching
 - Wayland screenshot and screen-recording keybinds
 - existing-config backups
 - host-local Hyprland override file that is never overwritten
-- `cyberkali doctor`, `status`, `start`, `stop`, `restart`, and `launcher`
+- CLI diagnostics and direct overlay test commands
 
 ## Install
 
@@ -54,6 +57,8 @@ SUPER + Space       Kiroshi application launcher
 SUPER + Return      Kitty terminal
 SUPER + E           File manager
 SUPER + 1..0        Workspaces
+SUPER + SHIFT + N   NetWatch network intelligence
+SUPER + SHIFT + O   Radioport media controls
 SUPER + SHIFT + C   Cycle Red -> Cyan -> Amber
 SUPER + SHIFT + S   Region screenshot to clipboard
 SUPER + SHIFT + R   Start / stop screen recording
@@ -68,12 +73,19 @@ cyberkali flavor cyan
 cyberkali flavor amber
 cyberkali cycle
 cyberkali launcher
+cyberkali netwatch
+cyberkali media
+cyberkali streetcred-test nmap 7.x
 cyberkali start
 cyberkali stop
 cyberkali restart
 cyberkali status
 cyberkali doctor
 ```
+
+## Package Street Cred
+
+CyberKali does not modify APT itself. A user-level systemd service watches `/var/log/dpkg.log` and sends package install events to the running AGS shell. This keeps the feature reversible and avoids a root-owned theme hook.
 
 ## Architecture
 
@@ -87,12 +99,19 @@ Kali Rolling
     +-- AGS / Astal
     |     +-- HUD telemetry
     |     +-- Kiroshi launcher
+    |     +-- NetWatch
+    |     +-- Radioport
+    |     +-- Street Cred overlay
     |     +-- shared theme tokens
+    |
+    +-- user service
+    |     +-- dpkg package event watcher
     |
     +-- CyberKali CLI
           +-- flavor control
           +-- diagnostics
           +-- shell lifecycle
+          +-- overlay controls
 ```
 
 ## Source runtime policy
@@ -101,4 +120,4 @@ CyberKali does not track AGS or Astal `main` at install time. `dependencies.lock
 
 ## Status
 
-The first functional shell layer is implemented. The next porting layers are notifications, media controls, richer CyberArch HUD geometry/animations, Kali package-event Street Cred, lock screen, and additional NetWatch panels.
+The second functional shell layer is implemented. The next porting layers are projected CyberArch-style Cairo HUD geometry and animation, native notification history, lock screen integration, and richer Kali-specific system controls.
