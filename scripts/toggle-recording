@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -u
+
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/cyberkali"
+PID_FILE="$STATE_DIR/recording.pid"
+VIDEO_DIR="${XDG_VIDEOS_DIR:-$HOME/Videos}/CyberKali"
+mkdir -p "$STATE_DIR" "$VIDEO_DIR"
+
+if [ -r "$PID_FILE" ]; then
+  pid="$(cat "$PID_FILE")"
+  if kill -0 "$pid" >/dev/null 2>&1; then
+    kill -INT "$pid" >/dev/null 2>&1 || true
+    rm -f "$PID_FILE"
+    notify-send "CyberKali" "Recording saved to $VIDEO_DIR" >/dev/null 2>&1 || true
+    exit 0
+  fi
+  rm -f "$PID_FILE"
+fi
+
+if ! command -v wf-recorder >/dev/null 2>&1; then
+  notify-send "CyberKali" "wf-recorder is not installed" >/dev/null 2>&1 || true
+  exit 1
+fi
+
+stamp="$(date +%Y%m%d-%H%M%S)"
+out="$VIDEO_DIR/cyberkali-$stamp.mp4"
+wf-recorder -f "$out" >/dev/null 2>&1 &
+pid=$!
+printf '%s\n' "$pid" > "$PID_FILE"
+notify-send "CyberKali" "Screen recording started" >/dev/null 2>&1 || true
