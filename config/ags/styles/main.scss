@@ -16,33 +16,9 @@
   background: theme.$surface-strong;
 }
 
-.cyber-accent {
-  color: theme.$accent;
-}
-
-.cyber-muted {
-  color: theme.$text-muted;
-}
-
-.cyber-warning {
-  color: theme.$warning;
-}
-
-.cyber-grid {
-  background-image:
-    linear-gradient(theme.$grid 1px, transparent 1px),
-    linear-gradient(90deg, theme.$grid 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-
-.cyber-scanline {
-  background-image: repeating-linear-gradient(
-    0deg,
-    transparent 0,
-    transparent 3px,
-    theme.$scanline 4px
-  );
-}
+.cyber-accent { color: theme.$accent; }
+.cyber-muted { color: theme.$text-muted; }
+.cyber-warning { color: theme.$warning; }
 
 .cyber-button {
   padding: 8px 12px;
@@ -56,4 +32,112 @@
   border-color: theme.$accent;
   background: theme.$background-raised;
   box-shadow: 0 0 12px theme.$glow;
+}
+
+.cyberkali-hud {
+  background: transparent;
+}
+
+.hud-shell {
+  padding: 12px 16px 12px 12px;
+  min-width: 620px;
+  border-left: 4px solid theme.$accent;
+  border-top: 1px solid theme.$accent-bright;
+  border-bottom: 1px solid theme.$accent-dim;
+  background: theme.$surface-strong;
+}
+
+.hud-workspace {
+  min-width: 64px;
+  padding: 6px 10px;
+  border: 1px solid theme.$accent;
+  background: theme.$background-raised;
+  box-shadow: 0 0 10px theme.$glow;
+}
+
+.hud-kicker {
+  color: theme.$text-muted;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+
+.hud-workspace-value {
+  color: theme.$accent-bright;
+  font-size: 28px;
+  font-weight: 800;
+  text-shadow: 0 0 8px theme.$glow;
+}
+
+.hud-telemetry {
+  min-width: 290px;
+}
+
+.hud-title-row {
+  margin-bottom: 4px;
+}
+
+.hud-title {
+  color: theme.$accent-bright;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.hud-live {
+  color: theme.$success;
+  font-size: 9px;
+}
+
+.hud-stat-row {
+  min-height: 19px;
+}
+
+.hud-stat-name {
+  min-width: 42px;
+  color: theme.$text-muted;
+  font-size: 9px;
+}
+
+.hud-meter {
+  color: theme.$accent;
+  font-size: 10px;
+  text-shadow: 0 0 6px theme.$glow;
+}
+
+.hud-stat-value {
+  min-width: 40px;
+  color: theme.$text;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.hud-network {
+  min-width: 185px;
+  padding-left: 14px;
+  border-left: 1px solid theme.$accent-dim;
+}
+
+.hud-net-label {
+  min-width: 40px;
+  color: theme.$text-muted;
+  font-size: 9px;
+}
+
+.hud-net-value {
+  color: theme.$secondary;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.hud-vpn-offline {
+  color: theme.$warning;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.hud-vpn-online {
+  color: theme.$success;
+  font-size: 10px;
+  font-weight: 700;
+  text-shadow: 0 0 6px theme.$glow;
 }
