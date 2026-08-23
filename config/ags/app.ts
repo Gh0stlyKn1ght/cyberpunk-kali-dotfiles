@@ -11,6 +11,7 @@ import { NotificationCenterWindow, pushNotice, toggleNotificationCenter } from "
 import { SystemControlsWindow, toggleSystemControls } from "./modules/system-controls.ts"
 import { CornerWidgets } from "./modules/corner-widgets.ts"
 import { WorkspaceTransitionWindow, triggerWorkspaceTransition } from "./modules/workspace-transition.ts"
+import { CrtOverlayWindow } from "./modules/crt-overlay.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
@@ -98,6 +99,7 @@ App.start({
     ProjectedHudWindow()
     CornerWidgets()
     WorkspaceTransitionWindow()
+    CrtOverlayWindow()
     LauncherWindow()
     NetwatchWindow()
     MediaWindow()
