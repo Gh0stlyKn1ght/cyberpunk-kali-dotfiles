@@ -1,4 +1,4 @@
-import { Anchor, Box, Button, Exclusivity, Label, Layer, Window } from "../widget.ts"
+import { Anchor, Box, Button, Exclusivity, Label, Layer, Scrollable, Window } from "../widget.ts"
 
 export type Notice = { id: number; title: string; body: string; created: number }
 const notices: Notice[] = []
@@ -27,7 +27,7 @@ const row = (n: Notice) => Box({
 const render = () => {
   if (!list) return
   list.children = notices.length
-    ? notices.slice(0, 20).map(row)
+    ? notices.slice(0, 50).map(row)
     : [Label({ className: "notif-center-empty", label: "NO STORED MESSAGES" })]
 }
 
@@ -44,6 +44,14 @@ export const NotificationCenterWindow = () => {
   clear.connect("clicked", clearNotices)
   list = Box({ className: "notif-center-list", vertical: true, spacing: 6 })
   render()
+
+  const scroll = Scrollable({
+    className: "notif-center-scroll",
+    hscroll: "never",
+    vscroll: "automatic",
+    child: list,
+  })
+  scroll.set_size_request?.(-1, 520)
 
   win = Window({
     name: "cyberkali-notification-center",
@@ -62,7 +70,7 @@ export const NotificationCenterWindow = () => {
           Label({ className: "notif-center-heading", label: "NOTIFICATION CENTER", xalign: 0 }),
           clear,
         ] }),
-        list,
+        scroll,
       ],
     }),
   })
