@@ -6,6 +6,7 @@ export CYBERKALI_ROOT="$ROOT"
 
 . "$ROOT/installer/common.sh"
 . "$ROOT/installer/packages.sh"
+. "$ROOT/installer/ags.sh"
 
 DRY_RUN=0
 FLAVOR="red"
@@ -65,8 +66,10 @@ scan_packages
 
 if [ "$DRY_RUN" -eq 1 ]; then
   printf '\n%bDRY RUN%b\n' "$AMBER" "$RESET"
-  printf 'Missing required: %s\n' "${MISSING_REQUIRED[*]:-none}"
-  printf 'Unavailable required: %s\n' "${UNAVAILABLE_REQUIRED[*]:-none}"
+  printf 'Missing runtime: %s\n' "${MISSING_REQUIRED[*]:-none}"
+  printf 'Unavailable runtime: %s\n' "${UNAVAILABLE_REQUIRED[*]:-none}"
+  printf 'Missing build deps: %s\n' "${MISSING_BUILD[*]:-none}"
+  printf 'Unavailable build deps: %s\n' "${UNAVAILABLE_BUILD[*]:-none}"
   printf 'Missing optional: %s\n' "${MISSING_OPTIONAL[*]:-none}"
   printf 'Unavailable optional: %s\n' "${UNAVAILABLE_OPTIONAL[*]:-none}"
   printf 'Selected flavor: %s\n' "$FLAVOR"
@@ -75,6 +78,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
 fi
 
 install_packages
+ensure_ags_runtime
 ensure_dirs
 
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
@@ -106,4 +110,5 @@ ok "CyberKali base session installed"
 printf '\nNext:\n'
 printf '  cyberkali doctor\n'
 printf '  log out and select the Hyprland session\n'
+printf '  SUPER+SPACE opens Kiroshi launcher\n'
 printf '  SUPER+SHIFT+C cycles Red / Cyan / Amber\n'
