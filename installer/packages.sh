@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# Runtime packages from Kali/Debian repositories.
 CYBERKALI_REQUIRED_PACKAGES=(
   hyprland
   hyprlock
@@ -47,6 +46,8 @@ CYBERKALI_BUILD_PACKAGES=(
   libgtk4-layer-shell-dev
   libwayland-dev
   wayland-protocols
+  libjson-glib-dev
+  libgdk-pixbuf-2.0-dev
 )
 
 CYBERKALI_OPTIONAL_PACKAGES=(
