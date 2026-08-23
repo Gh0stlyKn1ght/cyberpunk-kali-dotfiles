@@ -23,19 +23,9 @@ EOF
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY_RUN=1 ;;
-    --flavor)
-      shift
-      FLAVOR="${1:-}"
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      fail "Unknown option: $1"
-      usage
-      exit 2
-      ;;
+    --flavor) shift; FLAVOR="${1:-}" ;;
+    -h|--help) usage; exit 0 ;;
+    *) fail "Unknown option: $1"; usage; exit 2 ;;
   esac
   shift
 done
@@ -58,9 +48,7 @@ if ! is_kali; then
 fi
 
 info "Refreshing APT metadata"
-if [ "$DRY_RUN" -eq 0 ]; then
-  sudo apt-get update
-fi
+if [ "$DRY_RUN" -eq 0 ]; then sudo apt-get update; fi
 
 scan_packages
 
@@ -73,7 +61,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
   printf 'Missing optional: %s\n' "${MISSING_OPTIONAL[*]:-none}"
   printf 'Unavailable optional: %s\n' "${UNAVAILABLE_OPTIONAL[*]:-none}"
   printf 'Selected flavor: %s\n' "$FLAVOR"
-  printf 'Managed configs: AGS + Hyprland\n'
+  printf 'Managed configs: AGS + Hyprland + package watcher\n'
   exit 0
 fi
 
@@ -82,7 +70,8 @@ ensure_ags_runtime
 ensure_dirs
 
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-mkdir -p "$CONFIG_HOME/hypr" "$CYBERKALI_CONFIG_DIR/bin" "$HOME/.local/bin"
+SYSTEMD_USER="$CONFIG_HOME/systemd/user"
+mkdir -p "$CONFIG_HOME/hypr" "$CYBERKALI_CONFIG_DIR/bin" "$HOME/.local/bin" "$SYSTEMD_USER"
 
 # Keep the checkout as the managed source during development. Existing user
 # configs are backed up before managed files replace them.
@@ -97,10 +86,13 @@ if [ ! -e "$CONFIG_HOME/hypr/cyberkali-local.conf" ]; then
 fi
 
 install -m 755 "$ROOT/scripts/launch-shell" "$CYBERKALI_CONFIG_DIR/bin/launch-shell"
-if [ -f "$ROOT/scripts/toggle-recording" ]; then
-  install -m 755 "$ROOT/scripts/toggle-recording" "$CYBERKALI_CONFIG_DIR/bin/toggle-recording"
-fi
+install -m 755 "$ROOT/scripts/toggle-recording" "$CYBERKALI_CONFIG_DIR/bin/toggle-recording"
+install -m 755 "$ROOT/scripts/watch-packages" "$CYBERKALI_CONFIG_DIR/bin/watch-packages"
 install -m 755 "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
+
+safe_link "$ROOT/config/systemd/user/cyberkali-package-watch.service" "$SYSTEMD_USER/cyberkali-package-watch.service"
+systemctl --user daemon-reload || warn "Could not reload user systemd manager"
+systemctl --user enable --now cyberkali-package-watch.service || warn "Package Street Cred watcher could not be enabled"
 
 printf '%s\n' "$ROOT" > "$CYBERKALI_CONFIG_DIR/root"
 printf '%s\n' "$FLAVOR" > "$CYBERKALI_CONFIG_DIR/flavor"
@@ -111,4 +103,6 @@ printf '\nNext:\n'
 printf '  cyberkali doctor\n'
 printf '  log out and select the Hyprland session\n'
 printf '  SUPER+SPACE opens Kiroshi launcher\n'
+printf '  SUPER+SHIFT+N toggles NetWatch\n'
+printf '  SUPER+SHIFT+O toggles Radioport\n'
 printf '  SUPER+SHIFT+C cycles Red / Cyan / Amber\n'
