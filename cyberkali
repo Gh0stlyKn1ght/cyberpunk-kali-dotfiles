@@ -120,8 +120,9 @@ status() {
   printf 'flavor     %s\n' "$(current_flavor)"
   printf 'hyprland   %s\n' "$(have hyprctl && echo detected || echo missing)"
   printf 'ags        %s\n' "$(have ags && echo detected || echo missing)"
-  printf 'astal3     %s\n' "$(pkg-config --exists astal3 2>/dev/null && echo detected || echo missing)"
-  printf 'astal4     %s\n' "$(pkg-config --exists astal4 2>/dev/null && echo detected || echo missing)"
+  printf 'astal io   %s\n' "$(pkg-config --exists astal-io-0.1 2>/dev/null && echo detected || echo missing)"
+  printf 'astal gtk3 %s\n' "$(pkg-config --exists astal-3.0 2>/dev/null && echo detected || echo missing)"
+  printf 'astal gtk4 %s\n' "$(pkg-config --exists astal-4.0 2>/dev/null && echo detected || echo missing)"
   printf 'quickshell %s\n' "$(have qs && echo detected || echo missing)"
   if have pgrep && pgrep -f 'ags run.*config/ags/app.ts' >/dev/null 2>&1; then
     printf 'shell      running\n'
@@ -154,8 +155,9 @@ doctor() {
   done
 
   if have ags; then ok "AGS runtime"; else fail "AGS runtime missing"; failures=$((failures+1)); fi
-  if pkg-config --exists astal3 2>/dev/null; then ok "Astal GTK3"; else fail "Astal GTK3 missing"; failures=$((failures+1)); fi
-  if pkg-config --exists astal4 2>/dev/null; then ok "Astal GTK4"; else fail "Astal GTK4 missing"; failures=$((failures+1)); fi
+  if pkg-config --exists astal-io-0.1 2>/dev/null; then ok "Astal IO"; else fail "Astal IO missing"; failures=$((failures+1)); fi
+  if pkg-config --exists astal-3.0 2>/dev/null; then ok "Astal GTK3"; else fail "Astal GTK3 missing"; failures=$((failures+1)); fi
+  if pkg-config --exists astal-4.0 2>/dev/null; then ok "Astal GTK4"; else fail "Astal GTK4 missing"; failures=$((failures+1)); fi
 
   scan_packages
   for package in "${UNAVAILABLE_REQUIRED[@]}"; do
