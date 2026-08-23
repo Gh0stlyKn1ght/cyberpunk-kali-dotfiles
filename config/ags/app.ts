@@ -7,6 +7,8 @@ import { NetwatchWindow, hideNetwatch, showNetwatch, toggleNetwatch } from "./mo
 import { MediaWindow, hideMedia, showMedia, toggleMedia } from "./modules/media.ts"
 import { StreetCredWindow, showStreetCred } from "./modules/streetcred.ts"
 import { NotificationWindow, hideNotification, showNotification } from "./modules/notifications.ts"
+import { NotificationCenterWindow, pushNotice, toggleNotificationCenter } from "./modules/notification-center.ts"
+import { SystemControlsWindow, toggleSystemControls } from "./modules/system-controls.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
@@ -25,6 +27,7 @@ const parseStreetCred = (request: string) => {
   if (!request.startsWith("streetcred|")) return false
   const [, pkg = "", version = ""] = request.split("|", 3)
   showStreetCred(pkg, version)
+  pushNotice("PACKAGE INSTALLED", `${pkg} ${version}`.trim())
   return true
 }
 
@@ -32,6 +35,7 @@ const parseNotification = (request: string) => {
   if (!request.startsWith("notify|")) return false
   const [, title = "SYSTEM MESSAGE", body = ""] = request.split("|", 3)
   showNotification(title, body)
+  pushNotice(title, body)
   return true
 }
 
@@ -62,6 +66,10 @@ App.start({
       showMedia(); reply("ok")
     } else if (request === "media-close") {
       hideMedia(); reply("ok")
+    } else if (request === "notifications") {
+      toggleNotificationCenter(); reply("ok")
+    } else if (request === "controls") {
+      toggleSystemControls(); reply("ok")
     } else if (request === "notification-close") {
       hideNotification(); reply("ok")
     } else if (parseStreetCred(request) || parseNotification(request)) {
@@ -78,5 +86,7 @@ App.start({
     MediaWindow()
     StreetCredWindow()
     NotificationWindow()
+    NotificationCenterWindow()
+    SystemControlsWindow()
   },
 })

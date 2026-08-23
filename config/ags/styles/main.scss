@@ -86,16 +86,7 @@
 .kiroshi-footer { margin-top: 8px; padding-top: 9px; border-top: 1px solid theme.$accent-dim; color: theme.$text-muted; font-size: 8px; letter-spacing: 1px; }
 
 /* NETWATCH */
-.netwatch-frame {
-  min-width: 420px;
-  margin: 120px 28px 0 0;
-  padding: 16px 18px;
-  border-top: 2px solid theme.$accent-bright;
-  border-left: 5px solid theme.$accent;
-  border-bottom: 1px solid theme.$accent-dim;
-  background: theme.$surface-strong;
-  box-shadow: 0 0 22px theme.$glow;
-}
+.netwatch-frame { min-width: 420px; margin: 120px 28px 0 0; padding: 16px 18px; border-top: 2px solid theme.$accent-bright; border-left: 5px solid theme.$accent; border-bottom: 1px solid theme.$accent-dim; background: theme.$surface-strong; box-shadow: 0 0 22px theme.$glow; }
 .netwatch-kicker, .media-kicker, .streetcred-kicker { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
 .netwatch-title { margin: 3px 0 10px 0; color: theme.$accent-bright; font-size: 18px; font-weight: 900; text-shadow: 0 0 8px theme.$glow; }
 .netwatch-row { min-height: 22px; border-bottom: 1px solid theme.$grid; }
@@ -106,16 +97,7 @@
 .netwatch-footer { margin-top: 8px; color: theme.$text-muted; font-size: 7px; letter-spacing: 1px; }
 
 /* RADIOPORT */
-.media-frame {
-  min-width: 440px;
-  margin: 0 0 34px 28px;
-  padding: 16px 18px;
-  border-left: 5px solid theme.$accent;
-  border-top: 1px solid theme.$accent-bright;
-  border-right: 1px solid theme.$accent-dim;
-  background: theme.$surface-strong;
-  box-shadow: 0 0 20px theme.$glow;
-}
+.media-frame { min-width: 440px; margin: 0 0 34px 28px; padding: 16px 18px; border-left: 5px solid theme.$accent; border-top: 1px solid theme.$accent-bright; border-right: 1px solid theme.$accent-dim; background: theme.$surface-strong; box-shadow: 0 0 20px theme.$glow; }
 .media-title { margin-top: 4px; color: theme.$accent-bright; font-size: 16px; font-weight: 900; }
 .media-artist { color: theme.$text; font-size: 10px; }
 .media-status { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
@@ -124,16 +106,27 @@
 .media-control:hover, .media-control:focus { border-color: theme.$accent-bright; box-shadow: 0 0 9px theme.$glow; }
 
 /* APT / DPKG STREET CRED */
-.streetcred-frame {
-  min-width: 340px;
-  margin: 28px 28px 0 0;
-  padding: 13px 16px 15px 16px;
-  border-left: 6px solid theme.$accent;
-  border-top: 1px solid theme.$accent-bright;
-  background: theme.$surface-strong;
-  box-shadow: 0 0 24px theme.$glow;
-}
+.streetcred-frame { min-width: 340px; margin: 28px 28px 0 0; padding: 13px 16px 15px 16px; border-left: 6px solid theme.$accent; border-top: 1px solid theme.$accent-bright; background: theme.$surface-strong; box-shadow: 0 0 24px theme.$glow; }
 .streetcred-title { margin-top: 2px; color: theme.$accent-bright; font-size: 22px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 12px theme.$glow; }
 .streetcred-status { margin-top: 6px; color: theme.$success; font-size: 8px; letter-spacing: 2px; }
 .streetcred-package { margin-top: 2px; color: theme.$text; font-size: 13px; font-weight: 800; }
 .streetcred-version { color: theme.$text-muted; font-size: 8px; }
+
+/* MESSAGE BUFFER */
+.notif-center-frame { min-width: 460px; margin: 86px 28px 0 0; padding: 16px; border-left: 5px solid theme.$accent; border-top: 1px solid theme.$accent-bright; background: theme.$surface-strong; }
+.notif-center-kicker, .system-control-kicker { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
+.notif-center-heading, .system-control-heading { color: theme.$accent-bright; font-size: 17px; font-weight: 900; text-shadow: 0 0 8px theme.$glow; }
+.notif-center-list { margin-top: 4px; }
+.notif-center-row { padding: 8px 10px; border-left: 2px solid theme.$accent-dim; border-bottom: 1px solid theme.$grid; background: theme.$background-raised; }
+.notif-center-title { min-width: 310px; color: theme.$text; font-size: 10px; font-weight: 800; }
+.notif-center-time { color: theme.$secondary; font-size: 8px; }
+.notif-center-body { color: theme.$text-muted; font-size: 9px; }
+.notif-center-empty { padding: 18px; color: theme.$text-muted; font-size: 9px; }
+
+/* SYSTEM CONTROL MATRIX */
+.system-control-frame { min-width: 500px; margin: 0 28px 42px 0; padding: 16px 18px; border-right: 5px solid theme.$accent; border-top: 1px solid theme.$accent-bright; background: theme.$surface-strong; }
+.system-control-row { min-height: 34px; padding: 4px 0; border-bottom: 1px solid theme.$grid; }
+.system-control-name { min-width: 84px; color: theme.$text-muted; font-size: 9px; letter-spacing: 1px; }
+.system-control-value { min-width: 90px; color: theme.$secondary; font-size: 10px; font-weight: 800; }
+.system-control-button { padding: 6px 10px; border: 1px solid theme.$accent-dim; color: theme.$accent; background: theme.$background-raised; font-size: 9px; font-weight: 800; }
+.system-control-button:hover, .system-control-button:focus { border-color: theme.$accent-bright; box-shadow: 0 0 8px theme.$glow; }

@@ -29,6 +29,9 @@ Usage:
   cyberkali launcher
   cyberkali netwatch
   cyberkali media
+  cyberkali messages
+  cyberkali controls
+  cyberkali notify-test [title] [body]
   cyberkali streetcred-test [package] [version]
   cyberkali doctor
   cyberkali status
@@ -119,6 +122,10 @@ doctor() {
     fi
   done
 
+  for command in brightnessctl bluetoothctl; do
+    if have "$command"; then ok "$command optional control"; else warn "$command missing; related system control will show N/A"; warnings=$((warnings+1)); fi
+  done
+
   if have ags; then ok "AGS runtime"; else fail "AGS runtime missing"; failures=$((failures+1)); fi
   if pkg-config --exists astal-io-0.1 2>/dev/null; then ok "Astal IO"; else fail "Astal IO missing"; failures=$((failures+1)); fi
   if pkg-config --exists astal-3.0 2>/dev/null; then ok "Astal GTK3"; else fail "Astal GTK3 missing"; failures=$((failures+1)); fi
@@ -153,6 +160,9 @@ case "$command" in
   launcher) request_shell launcher ;;
   netwatch) request_shell netwatch ;;
   media) request_shell media ;;
+  messages) request_shell notifications ;;
+  controls) request_shell controls ;;
+  notify-test) request_shell "notify|${1:-SYSTEM TEST}|${2:-CyberKali notification path operational}" ;;
   streetcred-test) request_shell "streetcred|${1:-nmap}|${2:-test}" ;;
   doctor) doctor ;;
   status) status ;;
