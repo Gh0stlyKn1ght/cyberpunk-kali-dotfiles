@@ -22,8 +22,9 @@ checkout_ref() {
 
 meson_install_dir() {
   local dir="$1"
+  shift || true
   rm -rf "$dir/build"
-  meson setup "$dir/build" "$dir" --prefix=/usr/local
+  meson setup "$dir/build" "$dir" --prefix=/usr/local "$@"
   meson compile -C "$dir/build"
   sudo meson install -C "$dir/build"
   sudo ldconfig
@@ -58,7 +59,9 @@ build_astal_core() {
   meson_install_dir "$src/lib/astal/io"
   meson_install_dir "$src/lib/astal/gtk3"
   meson_install_dir "$src/lib/astal/gtk4"
-  meson_install_dir "$src/lib/notifd"
+  # CyberKali only needs the notification library/typelib. Disable the optional
+  # CLI so its unrelated quarrel dependency cannot break Kali installs.
+  meson_install_dir "$src/lib/notifd" -Dlib=true -Dcli=false
   ensure_loader_paths
 }
 
