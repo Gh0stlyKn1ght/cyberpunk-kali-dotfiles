@@ -1,7 +1,7 @@
 import { App } from "./widget.ts"
 import { execAsync } from "astal"
 import GLib from "gi://GLib"
-import { ProjectedHudWindow } from "./modules/projected-hud.ts"
+import { ProjectedHudWindow, toggleHudLayer } from "./modules/projected-hud.ts"
 import { LauncherWindow, hideLauncher, showLauncher, toggleLauncher } from "./modules/launcher.ts"
 import { NetwatchWindow, hideNetwatch, showNetwatch, toggleNetwatch } from "./modules/netwatch.ts"
 import { MediaWindow, hideMedia, showMedia, toggleMedia } from "./modules/media.ts"
@@ -9,6 +9,8 @@ import { StreetCredWindow, showStreetCred } from "./modules/streetcred.ts"
 import { NotificationWindow, hideNotification, showNotification } from "./modules/notifications.ts"
 import { NotificationCenterWindow, pushNotice, toggleNotificationCenter } from "./modules/notification-center.ts"
 import { SystemControlsWindow, toggleSystemControls } from "./modules/system-controls.ts"
+import { CornerWidgets } from "./modules/corner-widgets.ts"
+import { WorkspaceTransitionWindow, triggerWorkspaceTransition } from "./modules/workspace-transition.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
@@ -36,6 +38,13 @@ const parseNotification = (request: string) => {
   const [, title = "SYSTEM MESSAGE", body = ""] = request.split("|", 3)
   showNotification(title, body)
   pushNotice(title, body)
+  return true
+}
+
+const parseWorkspaceTransition = (request: string) => {
+  if (!request.startsWith("workspace-glitch|")) return false
+  const [, target = ""] = request.split("|", 2)
+  triggerWorkspaceTransition(target)
   return true
 }
 
@@ -70,9 +79,11 @@ App.start({
       toggleNotificationCenter(); reply("ok")
     } else if (request === "controls") {
       toggleSystemControls(); reply("ok")
+    } else if (request === "hud-layer") {
+      reply(toggleHudLayer())
     } else if (request === "notification-close") {
       hideNotification(); reply("ok")
-    } else if (parseStreetCred(request) || parseNotification(request)) {
+    } else if (parseStreetCred(request) || parseNotification(request) || parseWorkspaceTransition(request)) {
       reply("ok")
     } else {
       reply("unknown request")
@@ -81,6 +92,8 @@ App.start({
   main() {
     compileCss()
     ProjectedHudWindow()
+    CornerWidgets()
+    WorkspaceTransitionWindow()
     LauncherWindow()
     NetwatchWindow()
     MediaWindow()
