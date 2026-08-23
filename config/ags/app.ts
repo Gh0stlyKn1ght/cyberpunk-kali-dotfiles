@@ -15,11 +15,15 @@ import { WorkspaceTransitionWindow, triggerWorkspaceTransition } from "./modules
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
 const CSS = `${ROOT}/styles/main.css`
+const FIDELITY_SCSS = `${ROOT}/styles/fidelity.scss`
+const FIDELITY_CSS = `${ROOT}/styles/fidelity.css`
 
 const compileCss = async () => {
   try {
     await execAsync(["sassc", SCSS, CSS])
+    await execAsync(["sassc", FIDELITY_SCSS, FIDELITY_CSS])
     App.apply_css(CSS, true)
+    App.apply_css(FIDELITY_CSS, true)
   } catch (error) {
     print(`[cyberkali] stylesheet compile failed: ${error}`)
   }
