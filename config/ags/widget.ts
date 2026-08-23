@@ -18,6 +18,7 @@ export const Overlay = (props: any) => new W.Overlay(props)
 export const Entry = (props: any) => new W.Entry(props)
 export const Scrollable = (props: any) => new W.Scrollable(props)
 export const Revealer = (props: any) => new W.Revealer(props)
+export const DrawingArea = (props: any) => new W.DrawingArea(props)
 export const Window = (props: any) => new W.Window({ application: App, ...props })
 
 export const activeMonitor = () => {
