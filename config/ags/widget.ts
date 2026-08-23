@@ -15,6 +15,9 @@ export const Label = (props: any) => new W.Label(props)
 export const Button = (props: any) => new W.Button(props)
 export const EventBox = (props: any) => new W.EventBox(props)
 export const Overlay = (props: any) => new W.Overlay(props)
+export const Entry = (props: any) => new W.Entry(props)
+export const Scrollable = (props: any) => new W.Scrollable(props)
+export const Revealer = (props: any) => new W.Revealer(props)
 export const Window = (props: any) => new W.Window({ application: App, ...props })
 
 export const activeMonitor = () => {
