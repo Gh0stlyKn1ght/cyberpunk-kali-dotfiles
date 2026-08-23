@@ -1,4 +1,5 @@
 import Gio from "gi://Gio"
+import Gtk from "gi://Gtk?version=3.0"
 import { Anchor, Box, Button, Entry, Exclusivity, Keymode, Label, Layer, Window } from "../widget.ts"
 
 let launcherWindow: any = null
@@ -112,8 +113,8 @@ export const LauncherWindow = () => {
     child: Box({
       className: "kiroshi-overlay",
       vertical: true,
-      valign: 3,
-      halign: 3,
+      valign: Gtk.Align.CENTER,
+      halign: Gtk.Align.CENTER,
       children: [
         Box({
           className: "kiroshi-frame cyber-panel",
