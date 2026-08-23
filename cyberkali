@@ -18,6 +18,8 @@ export CYBERKALI_ROOT="$ROOT"
 . "$ROOT/installer/common.sh"
 . "$ROOT/installer/packages.sh"
 
+AGS_INSTANCE="cyberkali"
+
 usage() {
   cat <<'EOF'
 CyberKali control utility
@@ -28,6 +30,7 @@ Usage:
   cyberkali start
   cyberkali stop
   cyberkali restart
+  cyberkali launcher
   cyberkali doctor
   cyberkali status
   cyberkali help
@@ -47,7 +50,7 @@ start_shell() {
     fail "AGS runtime is missing. Run cyberkali doctor."
     return 1
   fi
-  ags quit >/dev/null 2>&1 || true
+  ags quit --instance "$AGS_INSTANCE" >/dev/null 2>&1 || true
   nohup ags run "$ROOT/config/ags/app.ts" >>"$CYBERKALI_STATE_DIR/ags.log" 2>&1 &
   disown || true
   ok "CyberKali shell started"
@@ -55,7 +58,7 @@ start_shell() {
 
 stop_shell() {
   if have ags; then
-    ags quit >/dev/null 2>&1 || true
+    ags quit --instance "$AGS_INSTANCE" >/dev/null 2>&1 || true
   fi
   ok "CyberKali shell stopped"
 }
@@ -100,6 +103,14 @@ cycle_flavor() {
     cyan) set_flavor amber ;;
     amber|*) set_flavor red ;;
   esac
+}
+
+open_launcher() {
+  if ! have ags; then
+    fail "AGS runtime missing"
+    return 1
+  fi
+  ags request launcher --instance "$AGS_INSTANCE"
 }
 
 status() {
@@ -179,6 +190,7 @@ case "$command" in
   start) ensure_dirs; start_shell ;;
   stop) stop_shell ;;
   restart) ensure_dirs; reload_shell ;;
+  launcher) open_launcher ;;
   doctor) doctor ;;
   status) status ;;
   help|-h|--help) usage ;;
