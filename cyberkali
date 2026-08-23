@@ -3,7 +3,6 @@ set -euo pipefail
 
 ROOT="${CYBERKALI_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 if [ ! -f "$ROOT/installer/common.sh" ]; then
-  # Installed CLI copy: resolve project checkout recorded during installation.
   STATE_ROOT="${XDG_CONFIG_HOME:-$HOME/.config}/cyberkali/root"
   if [ -r "$STATE_ROOT" ]; then
     ROOT="$(cat "$STATE_ROOT")"
@@ -16,9 +15,7 @@ if [ ! -f "$ROOT/installer/common.sh" ]; then
 fi
 
 export CYBERKALI_ROOT="$ROOT"
-# shellcheck source=installer/common.sh
 . "$ROOT/installer/common.sh"
-# shellcheck source=installer/packages.sh
 . "$ROOT/installer/packages.sh"
 
 usage() {
@@ -27,17 +24,46 @@ CyberKali control utility
 
 Usage:
   cyberkali flavor [red|cyan|amber]
+  cyberkali cycle
+  cyberkali start
+  cyberkali stop
+  cyberkali restart
   cyberkali doctor
   cyberkali status
   cyberkali help
 EOF
 }
 
-reload_shell() {
+current_flavor() {
+  if [ -r "$CYBERKALI_CONFIG_DIR/flavor" ]; then
+    cat "$CYBERKALI_CONFIG_DIR/flavor"
+  else
+    printf 'red\n'
+  fi
+}
+
+start_shell() {
+  if ! have ags; then
+    fail "AGS runtime is missing. Run cyberkali doctor."
+    return 1
+  fi
+  ags quit >/dev/null 2>&1 || true
+  nohup ags run "$ROOT/config/ags/app.ts" >>"$CYBERKALI_STATE_DIR/ags.log" 2>&1 &
+  disown || true
+  ok "CyberKali shell started"
+}
+
+stop_shell() {
   if have ags; then
     ags quit >/dev/null 2>&1 || true
-    nohup ags run "$ROOT/config/ags/app.ts" >/dev/null 2>&1 &
-    disown || true
+  fi
+  ok "CyberKali shell stopped"
+}
+
+reload_shell() {
+  if have ags; then
+    stop_shell >/dev/null
+    start_shell
   fi
 }
 
@@ -68,15 +94,26 @@ EOF
   fi
 }
 
+cycle_flavor() {
+  case "$(current_flavor)" in
+    red) set_flavor cyan ;;
+    cyan) set_flavor amber ;;
+    amber|*) set_flavor red ;;
+  esac
+}
+
 status() {
-  local flavor="red"
-  [ -r "$CYBERKALI_CONFIG_DIR/flavor" ] && flavor="$(cat "$CYBERKALI_CONFIG_DIR/flavor")"
   printf '%bCYBERKALI // STATUS%b\n' "$BOLD" "$RESET"
-  printf 'root     %s\n' "$ROOT"
-  printf 'flavor   %s\n' "$flavor"
-  printf 'hyprland %s\n' "$(have hyprctl && echo detected || echo missing)"
-  printf 'ags      %s\n' "$(have ags && echo detected || echo missing)"
+  printf 'root       %s\n' "$ROOT"
+  printf 'flavor     %s\n' "$(current_flavor)"
+  printf 'hyprland   %s\n' "$(have hyprctl && echo detected || echo missing)"
+  printf 'ags        %s\n' "$(have ags && echo detected || echo missing)"
   printf 'quickshell %s\n' "$(have qs && echo detected || echo missing)"
+  if have pgrep && pgrep -f 'ags run.*config/ags/app.ts' >/dev/null 2>&1; then
+    printf 'shell      running\n'
+  else
+    printf 'shell      stopped\n'
+  fi
 }
 
 doctor() {
@@ -85,12 +122,12 @@ doctor() {
 
   if is_kali; then ok "Kali/Debian base detected"; else warn "Kali not positively identified"; warnings=$((warnings+1)); fi
 
-  for command in hyprctl gjs sassc grim slurp wf-recorder wl-copy nmcli wpctl playerctl jq; do
+  for command in hyprctl gjs sassc grim slurp wf-recorder wl-copy nmcli wpctl playerctl jq ip; do
     if have "$command"; then
       ok "$command"
     else
       case "$command" in
-        hyprctl|gjs|sassc|nmcli|wpctl)
+        hyprctl|gjs|sassc|nmcli|wpctl|ip)
           fail "$command missing"
           failures=$((failures+1))
           ;;
@@ -101,6 +138,13 @@ doctor() {
       esac
     fi
   done
+
+  if have ags; then
+    ok "AGS runtime"
+  else
+    fail "AGS runtime missing"
+    failures=$((failures+1))
+  fi
 
   scan_packages
   for package in "${UNAVAILABLE_REQUIRED[@]}"; do
@@ -118,6 +162,8 @@ doctor() {
   done
 
   if [ -n "${WAYLAND_DISPLAY:-}" ]; then ok "Wayland session: $WAYLAND_DISPLAY"; else warn "Not currently inside a Wayland session"; warnings=$((warnings+1)); fi
+  [ -r "$ROOT/config/ags/app.ts" ] && ok "AGS app entrypoint" || { fail "AGS app entrypoint missing"; failures=$((failures+1)); }
+  [ -r "$ROOT/config/hypr/hyprland.conf" ] && ok "Hyprland config" || { fail "Hyprland config missing"; failures=$((failures+1)); }
 
   printf '\nDiagnostics: %d failure(s), %d warning(s)\n' "$failures" "$warnings"
   [ "$failures" -eq 0 ]
@@ -127,12 +173,12 @@ command="${1:-help}"
 shift || true
 case "$command" in
   flavor)
-    if [ $# -eq 0 ]; then
-      [ -r "$CYBERKALI_CONFIG_DIR/flavor" ] && cat "$CYBERKALI_CONFIG_DIR/flavor" || printf 'red\n'
-    else
-      set_flavor "$@"
-    fi
+    if [ $# -eq 0 ]; then current_flavor; else set_flavor "$@"; fi
     ;;
+  cycle) cycle_flavor ;;
+  start) ensure_dirs; start_shell ;;
+  stop) stop_shell ;;
+  restart) ensure_dirs; reload_shell ;;
   doctor) doctor ;;
   status) status ;;
   help|-h|--help) usage ;;
