@@ -1,9 +1,10 @@
 import { App } from "./widget.ts"
 import { execAsync } from "astal"
+import GLib from "gi://GLib"
 import { HudWindow } from "./modules/hud.ts"
 import { LauncherWindow, hideLauncher, showLauncher, toggleLauncher } from "./modules/launcher.ts"
 
-const ROOT = `${App.configDir}`
+const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
 const CSS = `${ROOT}/styles/main.css`
 
