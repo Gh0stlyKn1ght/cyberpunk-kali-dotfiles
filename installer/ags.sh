@@ -14,10 +14,7 @@ load_pins() {
 
 checkout_ref() {
   local repo="$1" ref="$2" dest="$3"
-  if [ ! -d "$dest/.git" ]; then
-    rm -rf "$dest"
-    git clone "$repo" "$dest"
-  fi
+  if [ ! -d "$dest/.git" ]; then rm -rf "$dest"; git clone "$repo" "$dest"; fi
   git -C "$dest" fetch --tags --force origin
   git -C "$dest" checkout --force "$ref"
   git -C "$dest" submodule update --init --recursive
@@ -25,17 +22,16 @@ checkout_ref() {
 
 meson_install_dir() {
   local dir="$1"
+  shift || true
   rm -rf "$dir/build"
-  meson setup "$dir/build" "$dir" --prefix=/usr/local
+  meson setup "$dir/build" "$dir" --prefix=/usr/local "$@"
   meson compile -C "$dir/build"
   sudo meson install -C "$dir/build"
   sudo ldconfig
 }
 
 multiarch_triplet() {
-  if command -v dpkg-architecture >/dev/null 2>&1; then
-    dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null || true
-  fi
+  if command -v dpkg-architecture >/dev/null 2>&1; then dpkg-architecture -qDEB_HOST_MULTIARCH 2>/dev/null || true; fi
 }
 
 ensure_loader_paths() {
@@ -47,14 +43,10 @@ ensure_loader_paths() {
     {
       printf '\n# CYBERKALI_GI_TYPELIB_PATH\n'
       printf 'export GI_TYPELIB_PATH="/usr/local/lib/girepository-1.0'
-      if [ -n "$triplet" ]; then
-        printf ':/usr/local/lib/%s/girepository-1.0' "$triplet"
-      fi
+      if [ -n "$triplet" ]; then printf ':/usr/local/lib/%s/girepository-1.0' "$triplet"; fi
       printf '${GI_TYPELIB_PATH:+:$GI_TYPELIB_PATH}"\n'
       printf 'export LD_LIBRARY_PATH="/usr/local/lib'
-      if [ -n "$triplet" ]; then
-        printf ':/usr/local/lib/%s' "$triplet"
-      fi
+      if [ -n "$triplet" ]; then printf ':/usr/local/lib/%s' "$triplet"; fi
       printf '${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
     } >> "$profile"
   fi
@@ -62,11 +54,14 @@ ensure_loader_paths() {
 
 build_astal_core() {
   local src="$BUILD_ROOT/astal"
-  info "Building pinned Astal core"
+  info "Building pinned Astal core + notifd"
   checkout_ref "$ASTAL_REPO" "$ASTAL_REF" "$src"
   meson_install_dir "$src/lib/astal/io"
   meson_install_dir "$src/lib/astal/gtk3"
   meson_install_dir "$src/lib/astal/gtk4"
+  # CyberKali only needs the notification library/typelib. Disable the optional
+  # CLI so its unrelated quarrel dependency cannot break Kali installs.
+  meson_install_dir "$src/lib/notifd" -Dlib=true -Dcli=false
   ensure_loader_paths
 }
 
@@ -85,34 +80,16 @@ build_ags() {
 astal_ready() {
   pkg-config --exists astal-io-0.1 2>/dev/null \
     && pkg-config --exists astal-3.0 2>/dev/null \
-    && pkg-config --exists astal-4.0 2>/dev/null
+    && pkg-config --exists astal-4.0 2>/dev/null \
+    && pkg-config --exists astal-notifd-0.1 2>/dev/null
 }
 
 ensure_ags_runtime() {
   load_pins
   mkdir -p "$BUILD_ROOT"
-
-  if ! astal_ready; then
-    build_astal_core
-  else
-    ok "Astal core already available"
-  fi
-
-  if command -v ags >/dev/null 2>&1; then
-    ok "AGS runtime already available: $(command -v ags)"
-  else
-    build_ags
-  fi
-
-  if ! command -v ags >/dev/null 2>&1; then
-    fail "AGS build completed but ags is not on PATH. Check /usr/local/bin."
-    return 1
-  fi
-
-  if ! astal_ready; then
-    fail "Astal installed but pkg-config cannot resolve astal-io-0.1, astal-3.0, and astal-4.0."
-    return 1
-  fi
-
+  if ! astal_ready; then build_astal_core; else ok "Astal core + notifd already available"; fi
+  if command -v ags >/dev/null 2>&1; then ok "AGS runtime already available: $(command -v ags)"; else build_ags; fi
+  if ! command -v ags >/dev/null 2>&1; then fail "AGS build completed but ags is not on PATH. Check /usr/local/bin."; return 1; fi
+  if ! astal_ready; then fail "Astal runtime installed but pkg-config cannot resolve all required libraries."; return 1; fi
   ok "AGS/Astal runtime ready"
 }

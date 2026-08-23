@@ -13,7 +13,7 @@ const flavor = () => {
 const clockText = () => GLib.DateTime.new_now_local().format("%H:%M:%S") || "--:--:--"
 const dateText = () => GLib.DateTime.new_now_local().format("%Y.%m.%d") || "----.--.--"
 
-export const CornerWidgets = () => {
+export const CornerWidgets = (monitor?: any, suffix = "0") => {
   const time = Label({ className: "corner-time", label: clockText(), xalign: 1 })
   const date = Label({ className: "corner-date", label: dateText(), xalign: 1 })
   const net = Label({ className: "corner-net", label: "NET // INIT", xalign: 1 })
@@ -28,17 +28,14 @@ export const CornerWidgets = () => {
   })
 
   return Window({
-    name: "cyberkali-corner-status",
+    name: `cyberkali-corner-status-${suffix}`,
     className: "cyberkali-corner-status",
+    gdkmonitor: monitor,
     anchor: Anchor.BOTTOM | Anchor.RIGHT,
     layer: Layer.BOTTOM,
     exclusivity: Exclusivity.IGNORE,
     marginBottom: 26,
     marginRight: 28,
-    child: Box({
-      className: "corner-frame",
-      vertical: true,
-      children: [mode, time, date, net],
-    }),
+    child: Box({ className: "corner-frame", vertical: true, children: [mode, time, date, net] }),
   })
 }
