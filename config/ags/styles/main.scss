@@ -50,176 +50,90 @@
   box-shadow: 0 0 10px theme.$glow;
 }
 
-.hud-kicker {
-  color: theme.$text-muted;
-  font-size: 9px;
-  letter-spacing: 2px;
-}
-
-.hud-workspace-value {
-  color: theme.$accent-bright;
-  font-size: 28px;
-  font-weight: 800;
-  text-shadow: 0 0 8px theme.$glow;
-}
-
+.hud-kicker { color: theme.$text-muted; font-size: 9px; letter-spacing: 2px; }
+.hud-workspace-value { color: theme.$accent-bright; font-size: 28px; font-weight: 800; text-shadow: 0 0 8px theme.$glow; }
 .hud-telemetry { min-width: 290px; }
 .hud-title-row { margin-bottom: 4px; }
-
-.hud-title {
-  color: theme.$accent-bright;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
+.hud-title { color: theme.$accent-bright; font-size: 12px; font-weight: 800; letter-spacing: 1px; }
 .hud-live { color: theme.$success; font-size: 9px; }
 .hud-stat-row { min-height: 19px; }
-
-.hud-stat-name {
-  min-width: 42px;
-  color: theme.$text-muted;
-  font-size: 9px;
-}
-
-.hud-meter {
-  color: theme.$accent;
-  font-size: 10px;
-  text-shadow: 0 0 6px theme.$glow;
-}
-
-.hud-stat-value {
-  min-width: 40px;
-  color: theme.$text;
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.hud-network {
-  min-width: 185px;
-  padding-left: 14px;
-  border-left: 1px solid theme.$accent-dim;
-}
-
-.hud-net-label {
-  min-width: 40px;
-  color: theme.$text-muted;
-  font-size: 9px;
-}
-
+.hud-stat-name { min-width: 42px; color: theme.$text-muted; font-size: 9px; }
+.hud-meter { color: theme.$accent; font-size: 10px; text-shadow: 0 0 6px theme.$glow; }
+.hud-stat-value { min-width: 40px; color: theme.$text; font-size: 10px; font-weight: 700; }
+.hud-network { min-width: 185px; padding-left: 14px; border-left: 1px solid theme.$accent-dim; }
+.hud-net-label { min-width: 40px; color: theme.$text-muted; font-size: 9px; }
 .hud-net-value { color: theme.$secondary; font-size: 10px; font-weight: 700; }
 .hud-vpn-offline { color: theme.$warning; font-size: 10px; font-weight: 700; }
 .hud-vpn-online { color: theme.$success; font-size: 10px; font-weight: 700; text-shadow: 0 0 6px theme.$glow; }
 
 .cyberkali-launcher { background: rgba(0, 0, 0, 0.44); }
+.kiroshi-overlay { min-width: 1000px; min-height: 700px; padding: 80px; }
+.kiroshi-frame { min-width: 720px; padding: 20px 22px 16px 22px; border-left: 5px solid theme.$accent; border-right: 1px solid theme.$accent-dim; background: theme.$surface-strong; }
+.kiroshi-header { padding-bottom: 12px; border-bottom: 1px solid theme.$accent-dim; }
+.kiroshi-eyebrow { color: theme.$secondary; font-size: 9px; letter-spacing: 3px; }
+.kiroshi-title { margin-top: 3px; color: theme.$accent-bright; font-size: 24px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 10px theme.$glow; }
+.kiroshi-subtitle { margin-top: 3px; color: theme.$text-muted; font-size: 9px; }
+.kiroshi-search { min-height: 34px; margin: 4px 0 8px 0; padding: 0 12px; border: 1px solid theme.$accent; color: theme.$text; background: theme.$background-raised; box-shadow: inset 0 0 10px theme.$glow; }
+.kiroshi-search:focus { border-color: theme.$accent-bright; box-shadow: 0 0 10px theme.$glow; }
+.kiroshi-app-row { min-height: 42px; padding: 6px 10px; border-left: 2px solid transparent; border-bottom: 1px solid theme.$grid; background: transparent; }
+.kiroshi-app-row:hover, .kiroshi-app-row:focus { border-left-color: theme.$accent; background: theme.$background-raised; box-shadow: inset 10px 0 20px -16px theme.$glow; }
+.kiroshi-category { min-width: 86px; color: theme.$secondary; font-size: 8px; font-weight: 800; }
+.kiroshi-app-copy { min-width: 470px; }
+.kiroshi-app-name { color: theme.$text; font-size: 11px; font-weight: 800; }
+.kiroshi-app-command { color: theme.$text-muted; font-size: 8px; }
+.kiroshi-run { color: theme.$accent; font-size: 9px; font-weight: 800; }
+.kiroshi-empty { padding: 24px; color: theme.$warning; font-size: 10px; }
+.kiroshi-footer { margin-top: 8px; padding-top: 9px; border-top: 1px solid theme.$accent-dim; color: theme.$text-muted; font-size: 8px; letter-spacing: 1px; }
 
-.kiroshi-overlay {
-  min-width: 1000px;
-  min-height: 700px;
-  padding: 80px;
-}
-
-.kiroshi-frame {
-  min-width: 720px;
-  padding: 20px 22px 16px 22px;
+/* NETWATCH */
+.netwatch-frame {
+  min-width: 420px;
+  margin: 120px 28px 0 0;
+  padding: 16px 18px;
+  border-top: 2px solid theme.$accent-bright;
   border-left: 5px solid theme.$accent;
+  border-bottom: 1px solid theme.$accent-dim;
+  background: theme.$surface-strong;
+  box-shadow: 0 0 22px theme.$glow;
+}
+.netwatch-kicker, .media-kicker, .streetcred-kicker { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
+.netwatch-title { margin: 3px 0 10px 0; color: theme.$accent-bright; font-size: 18px; font-weight: 900; text-shadow: 0 0 8px theme.$glow; }
+.netwatch-row { min-height: 22px; border-bottom: 1px solid theme.$grid; }
+.netwatch-key { min-width: 90px; color: theme.$text-muted; font-size: 9px; }
+.netwatch-value { color: theme.$text; font-size: 10px; font-weight: 700; }
+.netwatch-online { color: theme.$success; }
+.netwatch-offline { color: theme.$warning; }
+.netwatch-footer { margin-top: 8px; color: theme.$text-muted; font-size: 7px; letter-spacing: 1px; }
+
+/* RADIOPORT */
+.media-frame {
+  min-width: 440px;
+  margin: 0 0 34px 28px;
+  padding: 16px 18px;
+  border-left: 5px solid theme.$accent;
+  border-top: 1px solid theme.$accent-bright;
   border-right: 1px solid theme.$accent-dim;
   background: theme.$surface-strong;
+  box-shadow: 0 0 20px theme.$glow;
 }
+.media-title { margin-top: 4px; color: theme.$accent-bright; font-size: 16px; font-weight: 900; }
+.media-artist { color: theme.$text; font-size: 10px; }
+.media-status { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
+.media-controls { margin-top: 8px; }
+.media-control { padding: 7px 11px; border: 1px solid theme.$accent-dim; color: theme.$accent; background: theme.$background-raised; font-size: 9px; font-weight: 800; }
+.media-control:hover, .media-control:focus { border-color: theme.$accent-bright; box-shadow: 0 0 9px theme.$glow; }
 
-.kiroshi-header {
-  padding-bottom: 12px;
-  border-bottom: 1px solid theme.$accent-dim;
+/* APT / DPKG STREET CRED */
+.streetcred-frame {
+  min-width: 340px;
+  margin: 28px 28px 0 0;
+  padding: 13px 16px 15px 16px;
+  border-left: 6px solid theme.$accent;
+  border-top: 1px solid theme.$accent-bright;
+  background: theme.$surface-strong;
+  box-shadow: 0 0 24px theme.$glow;
 }
-
-.kiroshi-eyebrow {
-  color: theme.$secondary;
-  font-size: 9px;
-  letter-spacing: 3px;
-}
-
-.kiroshi-title {
-  margin-top: 3px;
-  color: theme.$accent-bright;
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: 1px;
-  text-shadow: 0 0 10px theme.$glow;
-}
-
-.kiroshi-subtitle {
-  margin-top: 3px;
-  color: theme.$text-muted;
-  font-size: 9px;
-}
-
-.kiroshi-search {
-  min-height: 34px;
-  margin: 4px 0 8px 0;
-  padding: 0 12px;
-  border: 1px solid theme.$accent;
-  color: theme.$text;
-  background: theme.$background-raised;
-  box-shadow: inset 0 0 10px theme.$glow;
-}
-
-.kiroshi-search:focus {
-  border-color: theme.$accent-bright;
-  box-shadow: 0 0 10px theme.$glow;
-}
-
-.kiroshi-app-row {
-  min-height: 42px;
-  padding: 6px 10px;
-  border-left: 2px solid transparent;
-  border-bottom: 1px solid theme.$grid;
-  background: transparent;
-}
-
-.kiroshi-app-row:hover,
-.kiroshi-app-row:focus {
-  border-left-color: theme.$accent;
-  background: theme.$background-raised;
-  box-shadow: inset 10px 0 20px -16px theme.$glow;
-}
-
-.kiroshi-category {
-  min-width: 86px;
-  color: theme.$secondary;
-  font-size: 8px;
-  font-weight: 800;
-}
-
-.kiroshi-app-copy { min-width: 470px; }
-
-.kiroshi-app-name {
-  color: theme.$text;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.kiroshi-app-command {
-  color: theme.$text-muted;
-  font-size: 8px;
-}
-
-.kiroshi-run {
-  color: theme.$accent;
-  font-size: 9px;
-  font-weight: 800;
-}
-
-.kiroshi-empty {
-  padding: 24px;
-  color: theme.$warning;
-  font-size: 10px;
-}
-
-.kiroshi-footer {
-  margin-top: 8px;
-  padding-top: 9px;
-  border-top: 1px solid theme.$accent-dim;
-  color: theme.$text-muted;
-  font-size: 8px;
-  letter-spacing: 1px;
-}
+.streetcred-title { margin-top: 2px; color: theme.$accent-bright; font-size: 22px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 12px theme.$glow; }
+.streetcred-status { margin-top: 6px; color: theme.$success; font-size: 8px; letter-spacing: 2px; }
+.streetcred-package { margin-top: 2px; color: theme.$text; font-size: 13px; font-weight: 800; }
+.streetcred-version { color: theme.$text-muted; font-size: 8px; }
