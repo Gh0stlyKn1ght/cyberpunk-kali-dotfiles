@@ -1,0 +1,59 @@
+@use "active" as theme;
+
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", "JetBrains Mono", monospace;
+  color: theme.$text;
+}
+
+.cyber-panel {
+  background: theme.$surface;
+  border: 1px solid theme.$accent-dim;
+  box-shadow: 0 0 18px theme.$glow;
+}
+
+.cyber-panel--strong {
+  background: theme.$surface-strong;
+}
+
+.cyber-accent {
+  color: theme.$accent;
+}
+
+.cyber-muted {
+  color: theme.$text-muted;
+}
+
+.cyber-warning {
+  color: theme.$warning;
+}
+
+.cyber-grid {
+  background-image:
+    linear-gradient(theme.$grid 1px, transparent 1px),
+    linear-gradient(90deg, theme.$grid 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.cyber-scanline {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0,
+    transparent 3px,
+    theme.$scanline 4px
+  );
+}
+
+.cyber-button {
+  padding: 8px 12px;
+  border: 1px solid theme.$accent-dim;
+  color: theme.$accent;
+  background: theme.$surface;
+}
+
+.cyber-button:hover,
+.cyber-button:focus {
+  border-color: theme.$accent;
+  background: theme.$background-raised;
+  box-shadow: 0 0 12px theme.$glow;
+}
