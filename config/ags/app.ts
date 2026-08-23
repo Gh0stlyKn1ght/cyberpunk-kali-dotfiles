@@ -3,6 +3,9 @@ import { execAsync } from "astal"
 import GLib from "gi://GLib"
 import { HudWindow } from "./modules/hud.ts"
 import { LauncherWindow, hideLauncher, showLauncher, toggleLauncher } from "./modules/launcher.ts"
+import { NetwatchWindow, hideNetwatch, showNetwatch, toggleNetwatch } from "./modules/netwatch.ts"
+import { MediaWindow, hideMedia, showMedia, toggleMedia } from "./modules/media.ts"
+import { StreetCredWindow, showStreetCred } from "./modules/streetcred.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
@@ -17,6 +20,13 @@ const compileCss = async () => {
   }
 }
 
+const parseStreetCred = (request: string) => {
+  if (!request.startsWith("streetcred|")) return false
+  const [, pkg = "", version = ""] = request.split("|", 3)
+  showStreetCred(pkg, version)
+  return true
+}
+
 App.start({
   instanceName: "cyberkali",
   requestHandler(request, response) {
@@ -27,13 +37,24 @@ App.start({
     if (request === "reload-style") {
       compileCss().then(() => reply("ok")).catch(() => reply("error"))
     } else if (request === "launcher") {
-      toggleLauncher()
-      reply("ok")
+      toggleLauncher(); reply("ok")
     } else if (request === "launcher-open") {
-      showLauncher()
-      reply("ok")
+      showLauncher(); reply("ok")
     } else if (request === "launcher-close") {
-      hideLauncher()
+      hideLauncher(); reply("ok")
+    } else if (request === "netwatch") {
+      toggleNetwatch(); reply("ok")
+    } else if (request === "netwatch-open") {
+      showNetwatch(); reply("ok")
+    } else if (request === "netwatch-close") {
+      hideNetwatch(); reply("ok")
+    } else if (request === "media") {
+      toggleMedia(); reply("ok")
+    } else if (request === "media-open") {
+      showMedia(); reply("ok")
+    } else if (request === "media-close") {
+      hideMedia(); reply("ok")
+    } else if (parseStreetCred(request)) {
       reply("ok")
     } else {
       reply("unknown request")
@@ -43,5 +64,8 @@ App.start({
     compileCss()
     HudWindow()
     LauncherWindow()
+    NetwatchWindow()
+    MediaWindow()
+    StreetCredWindow()
   },
 })
