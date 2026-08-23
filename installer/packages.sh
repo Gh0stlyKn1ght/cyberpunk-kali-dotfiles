@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-# Packages available directly from Kali/Debian repositories. Keep optional
-# feature dependencies separate so a missing package never bricks the shell.
+# Runtime packages from Kali/Debian repositories.
 CYBERKALI_REQUIRED_PACKAGES=(
   hyprland
   xdg-desktop-portal-hyprland
@@ -13,10 +12,10 @@ CYBERKALI_REQUIRED_PACKAGES=(
   upower
   socat
   jq
-  rofi
   libnotify-bin
   sassc
   kitty
+  thunar
   curl
   wget
   sqlite3
@@ -27,6 +26,29 @@ CYBERKALI_REQUIRED_PACKAGES=(
   slurp
   wf-recorder
   wl-clipboard
+  iproute2
+)
+
+# AGS v3 does not have a complete Kali-native package path, so CyberKali can
+# build its pinned AGS/Astal runtime from source. These follow upstream's
+# Debian/Ubuntu source-build requirements plus Astal's Wayland protocol deps.
+CYBERKALI_BUILD_PACKAGES=(
+  git
+  pkg-config
+  meson
+  ninja-build
+  npm
+  golang-go
+  valac
+  valadoc
+  gobject-introspection
+  libgirepository1.0-dev
+  libgtk-3-dev
+  libgtk-layer-shell-dev
+  libgtk-4-dev
+  libgtk4-layer-shell-dev
+  libwayland-dev
+  wayland-protocols
 )
 
 CYBERKALI_OPTIONAL_PACKAGES=(
@@ -35,6 +57,7 @@ CYBERKALI_OPTIONAL_PACKAGES=(
   bluez
   bluez-tools
   fonts-jetbrains-mono
+  rofi
 )
 
 pkg_available() {
@@ -45,47 +68,61 @@ pkg_installed() {
   dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q 'install ok installed'
 }
 
-scan_packages() {
+scan_group() {
+  local missing_name="$1" unavailable_name="$2"
+  shift 2
   local package
+  local -n missing_ref="$missing_name"
+  local -n unavailable_ref="$unavailable_name"
+  for package in "$@"; do
+    if pkg_installed "$package"; then
+      continue
+    elif pkg_available "$package"; then
+      missing_ref+=("$package")
+    else
+      unavailable_ref+=("$package")
+    fi
+  done
+}
+
+scan_packages() {
   MISSING_REQUIRED=()
+  MISSING_BUILD=()
   MISSING_OPTIONAL=()
   UNAVAILABLE_REQUIRED=()
+  UNAVAILABLE_BUILD=()
   UNAVAILABLE_OPTIONAL=()
 
-  for package in "${CYBERKALI_REQUIRED_PACKAGES[@]}"; do
-    if pkg_installed "$package"; then
-      continue
-    elif pkg_available "$package"; then
-      MISSING_REQUIRED+=("$package")
-    else
-      UNAVAILABLE_REQUIRED+=("$package")
-    fi
-  done
-
-  for package in "${CYBERKALI_OPTIONAL_PACKAGES[@]}"; do
-    if pkg_installed "$package"; then
-      continue
-    elif pkg_available "$package"; then
-      MISSING_OPTIONAL+=("$package")
-    else
-      UNAVAILABLE_OPTIONAL+=("$package")
-    fi
-  done
+  scan_group MISSING_REQUIRED UNAVAILABLE_REQUIRED "${CYBERKALI_REQUIRED_PACKAGES[@]}"
+  scan_group MISSING_BUILD UNAVAILABLE_BUILD "${CYBERKALI_BUILD_PACKAGES[@]}"
+  scan_group MISSING_OPTIONAL UNAVAILABLE_OPTIONAL "${CYBERKALI_OPTIONAL_PACKAGES[@]}"
 }
 
 install_packages() {
   scan_packages
 
   if [ ${#UNAVAILABLE_REQUIRED[@]} -gt 0 ]; then
-    warn "Required packages unavailable in current APT metadata: ${UNAVAILABLE_REQUIRED[*]}"
-    warn "These may need a source build or a Kali package-name adapter."
+    fail "Required packages unavailable in current APT metadata: ${UNAVAILABLE_REQUIRED[*]}"
+    return 1
+  fi
+
+  if [ ${#UNAVAILABLE_BUILD[@]} -gt 0 ]; then
+    fail "AGS/Astal build dependencies unavailable: ${UNAVAILABLE_BUILD[*]}"
+    return 1
   fi
 
   if [ ${#MISSING_REQUIRED[@]} -gt 0 ]; then
     info "Installing required packages: ${MISSING_REQUIRED[*]}"
     sudo apt-get install -y "${MISSING_REQUIRED[@]}"
   else
-    ok "Required APT packages already installed"
+    ok "Required runtime packages already installed"
+  fi
+
+  if [ ${#MISSING_BUILD[@]} -gt 0 ]; then
+    info "Installing AGS/Astal build dependencies"
+    sudo apt-get install -y "${MISSING_BUILD[@]}"
+  else
+    ok "AGS/Astal build dependencies already installed"
   fi
 
   if [ ${#MISSING_OPTIONAL[@]} -gt 0 ]; then

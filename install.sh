@@ -4,10 +4,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export CYBERKALI_ROOT="$ROOT"
 
-# shellcheck source=installer/common.sh
 . "$ROOT/installer/common.sh"
-# shellcheck source=installer/packages.sh
 . "$ROOT/installer/packages.sh"
+. "$ROOT/installer/ags.sh"
 
 DRY_RUN=0
 FLAVOR="red"
@@ -67,29 +66,49 @@ scan_packages
 
 if [ "$DRY_RUN" -eq 1 ]; then
   printf '\n%bDRY RUN%b\n' "$AMBER" "$RESET"
-  printf 'Missing required: %s\n' "${MISSING_REQUIRED[*]:-none}"
-  printf 'Unavailable required: %s\n' "${UNAVAILABLE_REQUIRED[*]:-none}"
+  printf 'Missing runtime: %s\n' "${MISSING_REQUIRED[*]:-none}"
+  printf 'Unavailable runtime: %s\n' "${UNAVAILABLE_REQUIRED[*]:-none}"
+  printf 'Missing build deps: %s\n' "${MISSING_BUILD[*]:-none}"
+  printf 'Unavailable build deps: %s\n' "${UNAVAILABLE_BUILD[*]:-none}"
   printf 'Missing optional: %s\n' "${MISSING_OPTIONAL[*]:-none}"
   printf 'Unavailable optional: %s\n' "${UNAVAILABLE_OPTIONAL[*]:-none}"
   printf 'Selected flavor: %s\n' "$FLAVOR"
+  printf 'Managed configs: AGS + Hyprland\n'
   exit 0
 fi
 
 install_packages
+ensure_ags_runtime
 ensure_dirs
 
-mkdir -p "$CYBERKALI_RUNTIME_DIR/repo"
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+mkdir -p "$CONFIG_HOME/hypr" "$CYBERKALI_CONFIG_DIR/bin" "$HOME/.local/bin"
 
-# Keep the live checkout as the source during development. The runtime links
-# make it possible to replace this with a packaged install later.
-safe_link "$ROOT/config/ags" "${XDG_CONFIG_HOME:-$HOME/.config}/ags"
+# Keep the checkout as the managed source during development. Existing user
+# configs are backed up before managed files replace them.
+safe_link "$ROOT/config/ags" "$CONFIG_HOME/ags"
+safe_link "$ROOT/config/hypr/hyprland.conf" "$CONFIG_HOME/hypr/hyprland.conf"
+safe_link "$ROOT/config/hypr/cyberkali-keybinds.conf" "$CONFIG_HOME/hypr/cyberkali-keybinds.conf"
+
+# Local overrides are user-owned. Never replace them once created.
+if [ ! -e "$CONFIG_HOME/hypr/cyberkali-local.conf" ]; then
+  cp "$ROOT/config/hypr/cyberkali-local.conf" "$CONFIG_HOME/hypr/cyberkali-local.conf"
+  ok "Created local Hyprland override file"
+fi
+
+install -m 755 "$ROOT/scripts/launch-shell" "$CYBERKALI_CONFIG_DIR/bin/launch-shell"
+if [ -f "$ROOT/scripts/toggle-recording" ]; then
+  install -m 755 "$ROOT/scripts/toggle-recording" "$CYBERKALI_CONFIG_DIR/bin/toggle-recording"
+fi
+install -m 755 "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
 
 printf '%s\n' "$ROOT" > "$CYBERKALI_CONFIG_DIR/root"
 printf '%s\n' "$FLAVOR" > "$CYBERKALI_CONFIG_DIR/flavor"
 bash "$ROOT/cyberkali" flavor "$FLAVOR" --no-reload
 
-mkdir -p "$HOME/.local/bin"
-install -m 755 "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
-
-ok "CyberKali foundation installed"
-printf '\nRun: cyberkali doctor\n'
+ok "CyberKali base session installed"
+printf '\nNext:\n'
+printf '  cyberkali doctor\n'
+printf '  log out and select the Hyprland session\n'
+printf '  SUPER+SPACE opens Kiroshi launcher\n'
+printf '  SUPER+SHIFT+C cycles Red / Cyan / Amber\n'

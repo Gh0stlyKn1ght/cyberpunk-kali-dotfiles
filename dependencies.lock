@@ -1,0 +1,8 @@
+# CyberKali source dependency pins
+# Update intentionally, then validate on Kali Rolling before changing these.
+
+AGS_REPO=https://github.com/Aylur/ags.git
+AGS_REF=v3.1.2
+
+ASTAL_REPO=https://github.com/Aylur/astal.git
+ASTAL_REF=bcd02cbd1391e85f52c5ff63e00708b5b62f55ec

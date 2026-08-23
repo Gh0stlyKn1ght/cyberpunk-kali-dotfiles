@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -u
+
+ROOT_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/cyberkali/root"
+if [ ! -r "$ROOT_FILE" ]; then
+  printf 'CyberKali root state missing: %s\n' "$ROOT_FILE" >&2
+  exit 1
+fi
+
+ROOT="$(cat "$ROOT_FILE")"
+APP="$ROOT/config/ags/app.ts"
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/cyberkali"
+mkdir -p "$LOG_DIR"
+
+if ! command -v ags >/dev/null 2>&1; then
+  printf 'AGS runtime is not installed. Run: cyberkali doctor\n' >&2
+  exit 1
+fi
+
+ags quit --instance cyberkali >/dev/null 2>&1 || true
+exec ags run "$APP" >>"$LOG_DIR/ags.log" 2>&1
