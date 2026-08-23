@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -u
+
+LOG="/var/log/dpkg.log"
+INSTANCE="cyberkali"
+
+[ -r "$LOG" ] || exit 0
+command -v ags >/dev/null 2>&1 || exit 0
+
+notify_pkg() {
+  local pkg="$1" version="$2"
+  pkg="$(printf '%s' "$pkg" | tr -cd 'A-Za-z0-9+_.:@~-')"
+  version="$(printf '%s' "$version" | tr -cd 'A-Za-z0-9+_.:@~-')"
+  [ -n "$pkg" ] || return 0
+  ags request "streetcred|${pkg}|${version}" --instance "$INSTANCE" >/dev/null 2>&1 || true
+}
+
+tail -Fn0 "$LOG" 2>/dev/null | while IFS= read -r record; do
+  set -- $record
+  [ "${3:-}" = "install" ] || continue
+  notify_pkg "${4:-}" "${6:-}"
+done
