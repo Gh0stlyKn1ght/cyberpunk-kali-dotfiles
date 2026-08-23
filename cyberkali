@@ -46,6 +46,7 @@ current_flavor() {
 }
 
 start_shell() {
+  ensure_dirs
   if ! have ags; then
     fail "AGS runtime is missing. Run cyberkali doctor."
     return 1
@@ -119,6 +120,8 @@ status() {
   printf 'flavor     %s\n' "$(current_flavor)"
   printf 'hyprland   %s\n' "$(have hyprctl && echo detected || echo missing)"
   printf 'ags        %s\n' "$(have ags && echo detected || echo missing)"
+  printf 'astal3     %s\n' "$(pkg-config --exists astal3 2>/dev/null && echo detected || echo missing)"
+  printf 'astal4     %s\n' "$(pkg-config --exists astal4 2>/dev/null && echo detected || echo missing)"
   printf 'quickshell %s\n' "$(have qs && echo detected || echo missing)"
   if have pgrep && pgrep -f 'ags run.*config/ags/app.ts' >/dev/null 2>&1; then
     printf 'shell      running\n'
@@ -150,21 +153,26 @@ doctor() {
     fi
   done
 
-  if have ags; then
-    ok "AGS runtime"
-  else
-    fail "AGS runtime missing"
-    failures=$((failures+1))
-  fi
+  if have ags; then ok "AGS runtime"; else fail "AGS runtime missing"; failures=$((failures+1)); fi
+  if pkg-config --exists astal3 2>/dev/null; then ok "Astal GTK3"; else fail "Astal GTK3 missing"; failures=$((failures+1)); fi
+  if pkg-config --exists astal4 2>/dev/null; then ok "Astal GTK4"; else fail "Astal GTK4 missing"; failures=$((failures+1)); fi
 
   scan_packages
   for package in "${UNAVAILABLE_REQUIRED[@]}"; do
-    fail "APT package unavailable: $package"
+    fail "APT runtime package unavailable: $package"
     failures=$((failures+1))
   done
   for package in "${MISSING_REQUIRED[@]}"; do
-    fail "Required package not installed: $package"
+    fail "Required runtime package not installed: $package"
     failures=$((failures+1))
+  done
+  for package in "${UNAVAILABLE_BUILD[@]}"; do
+    warn "Source-build dependency unavailable: $package"
+    warnings=$((warnings+1))
+  done
+  for package in "${MISSING_BUILD[@]}"; do
+    warn "Source-build dependency not installed: $package"
+    warnings=$((warnings+1))
   done
   for package in "${UNAVAILABLE_OPTIONAL[@]}" "${MISSING_OPTIONAL[@]}"; do
     [ -n "$package" ] || continue
@@ -175,6 +183,7 @@ doctor() {
   if [ -n "${WAYLAND_DISPLAY:-}" ]; then ok "Wayland session: $WAYLAND_DISPLAY"; else warn "Not currently inside a Wayland session"; warnings=$((warnings+1)); fi
   [ -r "$ROOT/config/ags/app.ts" ] && ok "AGS app entrypoint" || { fail "AGS app entrypoint missing"; failures=$((failures+1)); }
   [ -r "$ROOT/config/hypr/hyprland.conf" ] && ok "Hyprland config" || { fail "Hyprland config missing"; failures=$((failures+1)); }
+  [ -r "$ROOT/dependencies.lock" ] && ok "Dependency pins" || { fail "Dependency lock missing"; failures=$((failures+1)); }
 
   printf '\nDiagnostics: %d failure(s), %d warning(s)\n' "$failures" "$warnings"
   [ "$failures" -eq 0 ]
@@ -187,9 +196,9 @@ case "$command" in
     if [ $# -eq 0 ]; then current_flavor; else set_flavor "$@"; fi
     ;;
   cycle) cycle_flavor ;;
-  start) ensure_dirs; start_shell ;;
+  start) start_shell ;;
   stop) stop_shell ;;
-  restart) ensure_dirs; reload_shell ;;
+  restart) reload_shell ;;
   launcher) open_launcher ;;
   doctor) doctor ;;
   status) status ;;
