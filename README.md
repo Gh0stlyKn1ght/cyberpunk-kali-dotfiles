@@ -21,7 +21,9 @@ All three flavors use the same components. Color, glow, surface, warning, grid, 
 - NetWatch overlay for interface, IPv4, gateway, DNS, Wi-Fi, and VPN state
 - Radioport media overlay with playerctl previous / play-pause / next controls
 - DPKG package watcher with Cyberpunk `+ STREET CRED` install notifications
-- CyberKali notification surface
+- CyberKali notification toast surface
+- notification center with an in-session bounded event buffer
+- local system-control matrix for volume, microphone, brightness, Wi-Fi, and Bluetooth
 - flavor-aware Hyprlock generation
 - Red / Cyan / Amber runtime switching
 - Wayland screenshot and screen-recording keybinds
@@ -61,6 +63,8 @@ SUPER + E           File manager
 SUPER + 1..0        Workspaces
 SUPER + SHIFT + N   NetWatch network intelligence
 SUPER + SHIFT + O   Radioport media controls
+SUPER + SHIFT + M   Notification center
+SUPER + SHIFT + V   Local system controls
 SUPER + SHIFT + C   Cycle Red -> Cyan -> Amber
 SUPER + SHIFT + L   Lock session
 SUPER + SHIFT + S   Region screenshot to clipboard
@@ -78,6 +82,9 @@ cyberkali cycle
 cyberkali launcher
 cyberkali netwatch
 cyberkali media
+cyberkali messages
+cyberkali controls
+cyberkali notify-test "SYSTEM TEST" "notification path operational"
 cyberkali streetcred-test nmap 7.x
 cyberkali start
 cyberkali stop
@@ -106,7 +113,8 @@ Kali Rolling
     |     +-- NetWatch
     |     +-- Radioport
     |     +-- Street Cred overlay
-    |     +-- notifications
+    |     +-- notification toast + message buffer
+    |     +-- local hardware control matrix
     |     +-- shared theme tokens
     |
     +-- user service
@@ -185,17 +193,9 @@ rm -f ~/.config/hypr/hyprland.conf
 cp -a "$(cat ~/.local/state/cyberkali/latest-backup)/hyprland.conf" ~/.config/hypr/hyprland.conf
 ```
 
-If that backup does not contain `hyprland.conf`, inspect older directories under:
-
-```text
-~/.local/state/cyberkali/backups/
-```
-
-The installer creates separate timestamped backups as managed paths are replaced, so the newest backup is not guaranteed to contain every previous config file.
+If that backup does not contain `hyprland.conf`, inspect older directories under `~/.local/state/cyberkali/backups/`. The newest backup is not guaranteed to contain every previous config file.
 
 ## Hyprland works but applications open slowly, portals fail, or screen sharing is broken
-
-Wayland applications rely heavily on the desktop portal and the correct session environment. Hyprland's own documentation calls out incorrect XDG/DBus environment state as a common cause of slow application startup and broken sharing.
 
 Check the portal:
 
@@ -210,16 +210,11 @@ Refresh the session environment:
 ```bash
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
 systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
-```
-
-Then restart the portals:
-
-```bash
 systemctl --user restart xdg-desktop-portal-hyprland.service || true
 systemctl --user restart xdg-desktop-portal.service || true
 ```
 
-If `xdg-desktop-portal-hyprland` crashes, verify the Wayland Qt runtime and inspect its journal rather than installing random portal implementations. Multiple competing portal backends can cause confusing behavior.
+If `xdg-desktop-portal-hyprland` crashes, inspect its journal rather than installing random portal implementations. Multiple competing backends can cause confusing behavior.
 
 ## Screenshots or recording return black output
 
@@ -229,32 +224,24 @@ Confirm the tools are present:
 command -v grim slurp wf-recorder wl-copy
 ```
 
-Check Hyprland's screencopy permissions and current portal state. Newer Hyprland versions can explicitly deny direct screencopy clients such as `grim` and `wf-recorder`.
-
-Test screenshot capture directly:
+Test direct capture:
 
 ```bash
 grim /tmp/cyberkali-test.png
-file /tmp/cyberkali-test.png
-```
-
-Test a region:
-
-```bash
 grim -g "$(slurp)" /tmp/cyberkali-region.png
 ```
 
-If direct capture fails while portal-based sharing works, the issue is likely compositor permission/configuration rather than CyberKali.
+If direct capture fails while portal-based sharing works, inspect Hyprland screencopy permissions and compositor configuration rather than reinstalling CyberKali.
 
 ## AGS command exists but the CyberKali shell does not start
 
-Run the shell in the foreground so the actual error is visible:
+Run the shell in the foreground:
 
 ```bash
 ags run ~/.config/ags/app.ts
 ```
 
-Then verify the pinned runtime:
+Verify the pinned runtime:
 
 ```bash
 command -v ags
@@ -264,14 +251,12 @@ pkg-config --modversion astal-3.0
 pkg-config --modversion astal-4.0
 ```
 
-Check whether GObject Introspection can see the locally installed typelibs:
+Check locally installed typelibs:
 
 ```bash
 find /usr/local/lib /usr/local/lib/* -path '*girepository-1.0*' -type f 2>/dev/null | grep -i Astal
 printf '%s\n' "$GI_TYPELIB_PATH"
 ```
-
-The source-build bootstrap adds `/usr/local` typelib/library paths to `~/.profile`. If you installed from a terminal inside an already-running desktop, log out and back in before assuming the build failed.
 
 Temporary current-shell recovery:
 
@@ -281,19 +266,13 @@ export LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib/x86_64-linux-gnu${LD_LIBRA
 cyberkali restart
 ```
 
-Do not "fix" library errors by symlinking one versioned `.so` to a different ABI version. Rebuild the pinned runtime instead.
+Do not fix library errors by symlinking one versioned `.so` to a different ABI version. Rebuild the pinned runtime instead.
 
 ## AGS/Astal fails while building
 
-Do not repeatedly rerun the entire installer first. Inspect which stage failed.
+The build cache is `~/.cache/cyberkali/build/`.
 
-The build cache is:
-
-```text
-~/.cache/cyberkali/build/
-```
-
-Verify the build toolchain:
+Verify the toolchain:
 
 ```bash
 meson --version
@@ -304,7 +283,7 @@ valac --version
 pkg-config --version
 ```
 
-Refresh Kali packages and retry:
+Repair Kali package state first:
 
 ```bash
 sudo apt update
@@ -313,7 +292,7 @@ sudo dpkg --configure -a
 ./install.sh --dry-run
 ```
 
-If the cache is corrupted, remove only the CyberKali build cache and let the pinned sources rebuild:
+If only the CyberKali build cache is corrupted:
 
 ```bash
 rm -rf ~/.cache/cyberkali/build
@@ -324,8 +303,6 @@ Do not remove `/usr/local` wholesale.
 
 ## `Typelib file for namespace ... not found`
 
-This usually means the build installed successfully but GJS cannot locate the generated GObject Introspection typelib.
-
 Check:
 
 ```bash
@@ -333,42 +310,21 @@ echo "$GI_TYPELIB_PATH"
 find /usr/local -name '*.typelib' | grep -E 'Astal|Gnim'
 ```
 
-Then log out and back in, or test with the temporary `GI_TYPELIB_PATH` export shown above.
-
-If the required typelib is genuinely absent, clear `~/.cache/cyberkali/build` and rebuild from the pinned revisions rather than mixing random AGS/Astal releases.
+Log out and back in after source installation. If the required typelib is genuinely absent, clear the CyberKali build cache and rebuild from pinned revisions instead of mixing random AGS/Astal releases.
 
 ## Kiroshi launcher does not open
 
-First confirm the shell is alive:
-
 ```bash
 cyberkali status
-```
-
-Then request the launcher manually:
-
-```bash
 ags request launcher --instance cyberkali
-```
-
-If that works, the problem is the Hyprland keybind. Reload Hyprland:
-
-```bash
 hyprctl reload
 hyprctl configerrors
-```
-
-If the request fails, inspect:
-
-```bash
 tail -n 200 ~/.local/state/cyberkali/ags.log
 ```
 
+If the manual AGS request works, the problem is the Hyprland keybind rather than Kiroshi itself.
+
 ## NetWatch shows missing or incorrect data
-
-NetWatch intentionally uses local Linux networking state rather than privileged packet capture.
-
-Useful checks:
 
 ```bash
 ip route
@@ -382,39 +338,72 @@ VPN detection is heuristic. Interfaces such as `tun0`, `tap0`, or `wg0` are reco
 
 ## Radioport says no active media
 
-Check Playerctl directly:
-
 ```bash
 playerctl -l
 playerctl status
 playerctl metadata
 ```
 
-Not every player exposes MPRIS. If `playerctl -l` is empty, Radioport has nothing to control and CyberKali is behaving correctly.
+Not every player exposes MPRIS. If `playerctl -l` is empty, Radioport has nothing to control.
+
+## Notification center is empty or messages do not appear
+
+The current message buffer stores CyberKali events for the lifetime of the AGS process. Restarting AGS intentionally clears it. It is not yet a persistent desktop notification database.
+
+Test both paths:
+
+```bash
+cyberkali notify-test "TEST" "message buffer test"
+cyberkali messages
+```
+
+If the toast appears but the message center stays empty, inspect the AGS log for `notification-center` errors. If neither appears, verify the shell instance:
+
+```bash
+ags request 'notify|TEST|direct request' --instance cyberkali
+cyberkali status
+```
+
+Recovery is safe because no notification daemon is replaced. Restart only CyberKali:
+
+```bash
+cyberkali restart
+```
+
+## System controls show N/A or a button does nothing
+
+The control matrix intentionally degrades by feature. A missing optional tool must not crash the shell.
+
+Check each backend independently:
+
+```bash
+wpctl status
+wpctl get-volume @DEFAULT_AUDIO_SINK@
+wpctl get-volume @DEFAULT_AUDIO_SOURCE@
+brightnessctl -m
+nmcli radio
+bluetoothctl show
+```
+
+Common cases:
+
+- `brightnessctl` reports no device on desktops or some VMs. Brightness will show `N/A`; this is expected.
+- `bluetoothctl` fails when no Bluetooth adapter exists or BlueZ is not running. Bluetooth controls can be ignored.
+- `wpctl` fails when PipeWire/WirePlumber is not active. Check `systemctl --user status pipewire wireplumber`.
+- `nmcli` changes can fail if NetworkManager is not managing the interface.
+
+Do not run the AGS shell as root to make a control button work. Fix the underlying user service or accept the unavailable optional control.
 
 ## Street Cred notifications do not appear after `apt install`
-
-Check the package watcher:
 
 ```bash
 systemctl --user status cyberkali-package-watch.service
 journalctl --user -u cyberkali-package-watch.service -b --no-pager
 tail -n 20 /var/log/dpkg.log
-```
-
-Test the UI independently of dpkg:
-
-```bash
 cyberkali streetcred-test nmap test
 ```
 
-If the manual test works but real installs do not, the watcher or `/var/log/dpkg.log` access is the problem. Restart it:
-
-```bash
-systemctl --user restart cyberkali-package-watch.service
-```
-
-If the service was installed while no proper user systemd session was available:
+If the UI test works but real installs do not, restart the watcher:
 
 ```bash
 systemctl --user daemon-reload
@@ -423,64 +412,34 @@ systemctl --user enable --now cyberkali-package-watch.service
 
 ## Flavor switching changes some elements but not others
 
-The SCSS layer and Cairo HUD both consume the flavor state, but long-running processes may retain old state until restarted.
-
-Run:
-
 ```bash
 cyberkali flavor amber
 cyberkali restart
-```
-
-Inspect the selected flavor:
-
-```bash
 cat ~/.config/cyberkali/flavor
-```
-
-If the generated stylesheet is suspect:
-
-```bash
 sassc ~/.config/ags/styles/main.scss /tmp/cyberkali.css
 ```
 
-Any Sass error printed here should be fixed before restarting AGS.
+Any Sass error should be fixed before restarting AGS.
 
 ## Lock screen fails or immediately exits
 
-Test Hyprlock from a terminal before relying on the keybind:
-
 ```bash
 hyprlock -c ~/.config/hypr/hyprlock.conf
-```
-
-Regenerate the active flavor configuration:
-
-```bash
 ~/.config/cyberkali/bin/generate-lockscreen
-```
-
-Then inspect the generated file:
-
-```bash
 cat ~/.config/hypr/hyprlock.conf
 ```
 
-Kali can package a Hyprlock version older or newer than the configuration syntax used during development. If Hyprlock reports an unknown property, remove or adjust that property rather than disabling PAM or weakening authentication.
+If Hyprlock reports an unknown property, adjust that property for the Kali-packaged Hyprlock version. Do not weaken PAM authentication.
 
-If you need an immediate safe fallback, lock the login session through systemd/logind:
+Immediate safe fallback:
 
 ```bash
 loginctl lock-session
 ```
 
-Never replace PAM configuration merely to make the visual lock screen work.
-
 ## Package upgrade breaks Hyprland or CyberKali
 
-Kali Rolling changes quickly. Before a large upgrade, keep a working login session available and do not delete the normal Kali desktop environment.
-
-After an upgrade:
+After a Kali Rolling upgrade:
 
 ```bash
 cyberkali doctor
@@ -489,7 +448,7 @@ ags --version
 pkg-config --modversion astal-3.0
 ```
 
-If AGS/Astal ABI state is inconsistent, rebuild the pinned runtime:
+If AGS/Astal ABI state is inconsistent:
 
 ```bash
 rm -rf ~/.cache/cyberkali/build
@@ -500,8 +459,6 @@ If Hyprland itself is broken, use the standard Kali desktop session until the pa
 
 ## Emergency rollback to the normal Kali desktop
 
-CyberKali is not intended to replace your ability to use Kali without it.
-
 1. Switch to a TTY with `CTRL+ALT+F2` if necessary.
 2. Stop CyberKali components:
 
@@ -510,7 +467,7 @@ pkill -f 'ags run.*config/ags/app.ts' || true
 systemctl --user disable --now cyberkali-package-watch.service || true
 ```
 
-3. Remove only CyberKali-managed symlinks/configs after confirming what they point to:
+3. Inspect managed paths before removing anything:
 
 ```bash
 readlink ~/.config/ags || true
@@ -525,8 +482,6 @@ Do not purge Kali's display manager, Xfce/GNOME packages, NetworkManager, PipeWi
 
 ## Useful diagnostic bundle
 
-When reporting a bug, these commands provide most of the useful state without dumping unrelated personal files:
-
 ```bash
 cyberkali doctor
 cyberkali status
@@ -539,8 +494,8 @@ systemctl --user status cyberkali-package-watch.service --no-pager
 tail -n 150 ~/.local/state/cyberkali/ags.log
 ```
 
-Do not post tokens, browser profiles, SSH keys, VPN credentials, `/etc/shadow`, or the complete output of environment-variable dumps in bug reports.
+Do not post tokens, browser profiles, SSH keys, VPN credentials, `/etc/shadow`, or complete environment-variable dumps in bug reports.
 
 ## Status
 
-The projected visual layer is under active development. Current work focuses on Cairo HUD geometry, native notification surfaces, lock-screen integration, richer system controls, and additional recovery automation.
+The projected visual layer is under active development. Current work focuses on richer notification integration, projected side widgets, system-control polish, lock-screen fidelity, and animation/glitch behavior.
