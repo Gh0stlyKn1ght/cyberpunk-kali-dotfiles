@@ -3,6 +3,9 @@ import { interval } from "astal"
 import { Anchor, DrawingArea, Exclusivity, Layer, Window } from "../widget.ts"
 import { cpu, ram, disk, iface, ip, vpn, workspace } from "./system.ts"
 
+let hudWin: any = null
+let hudOnTop = true
+
 const clamp = (n: number) => Math.max(0, Math.min(1, n))
 
 const palette = () => {
@@ -13,9 +16,9 @@ const palette = () => {
     if (ok) flavor = new TextDecoder().decode(bytes).trim()
   } catch {}
 
-  if (flavor === "cyan") return { a: [0.38, 0.95, 1], b: [0.76, 1, 1], warn: [1, 0.82, 0.2], bg: [0.02, 0.08, 0.1] }
-  if (flavor === "amber") return { a: [1, 0.69, 0], b: [1, 0.83, 0.28], warn: [1, 0.36, 0.08], bg: [0.08, 0.045, 0.005] }
-  return { a: [1, 0.18, 0.24], b: [0.46, 0.89, 0.95], warn: [1, 0.84, 0.12], bg: [0.05, 0.025, 0.035] }
+  if (flavor === "cyan") return { flavor, a: [0.38, 0.95, 1], b: [0.76, 1, 1], warn: [1, 0.82, 0.2], bg: [0.02, 0.08, 0.1] }
+  if (flavor === "amber") return { flavor, a: [1, 0.69, 0], b: [1, 0.83, 0.28], warn: [1, 0.36, 0.08], bg: [0.08, 0.045, 0.005] }
+  return { flavor, a: [1, 0.18, 0.24], b: [0.46, 0.89, 0.95], warn: [1, 0.84, 0.12], bg: [0.05, 0.025, 0.035] }
 }
 
 const skew = (x: number, y: number) => [x + y * 0.11, y - x * 0.012]
@@ -63,11 +66,11 @@ export const ProjectedHudWindow = () => {
     ctx.rectangle(0, 0, 720, 210)
     ctx.fill()
 
-    for (let y = 18; y < 205; y += 8) line(ctx, [[0, y], [710, y]], p.a, 0.035, 0.6)
+    for (let y = 18; y < 205; y += 8) line(ctx, [[0, y], [710, y]], p.a, p.flavor === "amber" ? 0.07 : 0.035, 0.6)
 
     line(ctx, [[18, 18], [690, 18], [705, 34]], p.a, 0.95, 2)
     line(ctx, [[18, 192], [675, 192], [705, 162]], p.a, 0.5, 1.2)
-    text(ctx, 30, 43, "CYBERKALI // TACTICAL SYSTEM HUD", 13, p.b)
+    text(ctx, 30, 43, p.flavor === "amber" ? "CYBERKALI // CRT SYSTEM CONSOLE" : "CYBERKALI // TACTICAL SYSTEM HUD", 13, p.b)
     text(ctx, 30, 64, `WORKSPACE ${String(workspace.get()).padStart(2, "0")}`, 24, p.a)
 
     text(ctx, 30, 94, "CPU", 10, p.b, 0.8)
@@ -89,12 +92,20 @@ export const ProjectedHudWindow = () => {
     const v = vpn.get()
     text(ctx, 418, 152, `VPN    ${v === "OFFLINE" ? "OFFLINE" : v.toUpperCase()}`, 11, v === "OFFLINE" ? p.warn : p.b)
 
+    if (p.flavor === "amber") {
+      for (let y = 3; y < 208; y += 4) {
+        ctx.setSourceRGBA(0, 0, 0, 0.11)
+        ctx.rectangle(0, y, 720, 1)
+        ctx.fill()
+      }
+    }
+
     return false
   })
 
   interval(500, () => area.queue_draw())
 
-  return Window({
+  hudWin = Window({
     name: "cyberkali-projected-hud",
     className: "cyberkali-projected-hud",
     anchor: Anchor.TOP | Anchor.LEFT,
@@ -104,4 +115,19 @@ export const ProjectedHudWindow = () => {
     marginLeft: 18,
     child: area,
   })
+  return hudWin
+}
+
+export const toggleHudLayer = () => {
+  if (!hudWin) return "missing"
+  hudOnTop = !hudOnTop
+  const next = hudOnTop ? Layer.TOP : Layer.BOTTOM
+  try {
+    if (typeof hudWin.set_layer === "function") hudWin.set_layer(next)
+    else hudWin.layer = next
+  } catch (error) {
+    print(`[cyberkali] HUD layer toggle failed: ${error}`)
+    return "error"
+  }
+  return hudOnTop ? "top" : "bottom"
 }

@@ -31,6 +31,8 @@ Usage:
   cyberkali media
   cyberkali messages
   cyberkali controls
+  cyberkali hud-layer
+  cyberkali workspace-test [1..10]
   cyberkali notify-test [title] [body]
   cyberkali streetcred-test [package] [version]
   cyberkali doctor
@@ -80,7 +82,8 @@ EOF
 
   if have sassc; then
     sassc "$ROOT/config/ags/styles/main.scss" "$ROOT/config/ags/styles/main.css"
-    ok "Compiled $flavor stylesheet"
+    sassc "$ROOT/config/ags/styles/fidelity.scss" "$ROOT/config/ags/styles/fidelity.css" || true
+    ok "Compiled $flavor stylesheets"
   else
     warn "sassc not installed. Flavor selected but CSS was not compiled."
   fi
@@ -140,8 +143,10 @@ doctor() {
 
   if [ -n "${WAYLAND_DISPLAY:-}" ]; then ok "Wayland session: $WAYLAND_DISPLAY"; else warn "Not currently inside a Wayland session"; warnings=$((warnings+1)); fi
   [ -r "$ROOT/config/ags/app.ts" ] && ok "AGS app entrypoint" || { fail "AGS app entrypoint missing"; failures=$((failures+1)); }
+  [ -r "$ROOT/config/ags/styles/fidelity.scss" ] && ok "Fidelity stylesheet" || { fail "Fidelity stylesheet missing"; failures=$((failures+1)); }
   [ -r "$ROOT/config/hypr/hyprland.conf" ] && ok "Hyprland config" || { fail "Hyprland config missing"; failures=$((failures+1)); }
   [ -r "$ROOT/dependencies.lock" ] && ok "Dependency pins" || { fail "Dependency lock missing"; failures=$((failures+1)); }
+  [ -x "$CYBERKALI_CONFIG_DIR/bin/workspace-switch" ] && ok "Workspace transition wrapper" || { warn "workspace-switch helper missing; reinstall to restore animated workspace switching"; warnings=$((warnings+1)); }
   [ -r /var/log/dpkg.log ] && ok "dpkg event log readable" || { warn "dpkg log unavailable; Street Cred watcher disabled"; warnings=$((warnings+1)); }
   if have systemctl && systemctl --user is-active --quiet cyberkali-package-watch.service 2>/dev/null; then ok "Street Cred package watcher"; else warn "Street Cred package watcher inactive"; warnings=$((warnings+1)); fi
 
@@ -162,6 +167,8 @@ case "$command" in
   media) request_shell media ;;
   messages) request_shell notifications ;;
   controls) request_shell controls ;;
+  hud-layer) request_shell hud-layer ;;
+  workspace-test) request_shell "workspace-glitch|${1:-1}" ;;
   notify-test) request_shell "notify|${1:-SYSTEM TEST}|${2:-CyberKali notification path operational}" ;;
   streetcred-test) request_shell "streetcred|${1:-nmap}|${2:-test}" ;;
   doctor) doctor ;;

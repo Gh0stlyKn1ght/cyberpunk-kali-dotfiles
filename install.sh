@@ -76,6 +76,7 @@ install -m 755 "$ROOT/scripts/launch-shell" "$CYBERKALI_CONFIG_DIR/bin/launch-sh
 install -m 755 "$ROOT/scripts/toggle-recording" "$CYBERKALI_CONFIG_DIR/bin/toggle-recording"
 install -m 755 "$ROOT/scripts/watch-packages" "$CYBERKALI_CONFIG_DIR/bin/watch-packages"
 install -m 755 "$ROOT/scripts/generate-lockscreen" "$CYBERKALI_CONFIG_DIR/bin/generate-lockscreen"
+install -m 755 "$ROOT/scripts/workspace-switch" "$CYBERKALI_CONFIG_DIR/bin/workspace-switch"
 install -m 755 "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
 
 safe_link "$ROOT/config/systemd/user/cyberkali-package-watch.service" "$SYSTEMD_USER/cyberkali-package-watch.service"
@@ -94,5 +95,6 @@ printf '  log out and select the Hyprland session\n'
 printf '  SUPER+SPACE opens Kiroshi launcher\n'
 printf '  SUPER+SHIFT+N toggles NetWatch\n'
 printf '  SUPER+SHIFT+O toggles Radioport\n'
+printf '  SUPER+SHIFT+Z toggles HUD top/bottom layer\n'
 printf '  SUPER+SHIFT+C cycles Red / Cyan / Amber\n'
 printf '  SUPER+SHIFT+L locks the session\n'

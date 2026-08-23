@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -u
+
+TARGET="${1:-}"
+case "$TARGET" in
+  1|2|3|4|5|6|7|8|9|10) ;;
+  *) printf 'usage: workspace-switch 1..10\n' >&2; exit 2 ;;
+esac
+
+# Animation is cosmetic. Workspace dispatch must still work if AGS is down.
+if command -v ags >/dev/null 2>&1; then
+  ags request "workspace-glitch|$TARGET" --instance cyberkali >/dev/null 2>&1 || true
+fi
+
+if command -v hyprctl >/dev/null 2>&1; then
+  hyprctl dispatch workspace "$TARGET" >/dev/null
+else
+  printf 'hyprctl not found\n' >&2
+  exit 1
+fi
