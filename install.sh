@@ -84,11 +84,12 @@ mkdir -p "$CYBERKALI_RUNTIME_DIR/repo"
 # make it possible to replace this with a packaged install later.
 safe_link "$ROOT/config/ags" "${XDG_CONFIG_HOME:-$HOME/.config}/ags"
 
+printf '%s\n' "$ROOT" > "$CYBERKALI_CONFIG_DIR/root"
 printf '%s\n' "$FLAVOR" > "$CYBERKALI_CONFIG_DIR/flavor"
-"$ROOT/cyberkali" flavor "$FLAVOR" --no-reload
+bash "$ROOT/cyberkali" flavor "$FLAVOR" --no-reload
 
 mkdir -p "$HOME/.local/bin"
-ln -sfn "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
+install -m 755 "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
 
 ok "CyberKali foundation installed"
 printf '\nRun: cyberkali doctor\n'
