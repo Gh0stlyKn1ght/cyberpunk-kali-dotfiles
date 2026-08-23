@@ -17,5 +17,5 @@ if ! command -v ags >/dev/null 2>&1; then
   exit 1
 fi
 
-ags quit >/dev/null 2>&1 || true
+ags quit --instance cyberkali >/dev/null 2>&1 || true
 exec ags run "$APP" >>"$LOG_DIR/ags.log" 2>&1
