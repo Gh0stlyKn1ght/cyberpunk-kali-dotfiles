@@ -15,6 +15,7 @@ CYBERKALI_REQUIRED_PACKAGES=(
   libnotify-bin
   sassc
   kitty
+  thunar
   curl
   wget
   sqlite3
@@ -30,7 +31,7 @@ CYBERKALI_REQUIRED_PACKAGES=(
 
 # AGS v3 does not have a complete Kali-native package path, so CyberKali can
 # build its pinned AGS/Astal runtime from source. These follow upstream's
-# Debian/Ubuntu source-build requirements.
+# Debian/Ubuntu source-build requirements plus Astal's Wayland protocol deps.
 CYBERKALI_BUILD_PACKAGES=(
   git
   pkg-config
@@ -46,6 +47,8 @@ CYBERKALI_BUILD_PACKAGES=(
   libgtk-layer-shell-dev
   libgtk-4-dev
   libgtk4-layer-shell-dev
+  libwayland-dev
+  wayland-protocols
 )
 
 CYBERKALI_OPTIONAL_PACKAGES=(
