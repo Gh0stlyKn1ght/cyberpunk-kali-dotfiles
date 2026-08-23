@@ -10,29 +10,34 @@
   background: theme.$surface;
   box-shadow: 0 0 16px theme.$glow;
 }
-.corner-mode {
-  color: theme.$secondary;
-  font-size: 8px;
-  letter-spacing: 3px;
-}
-.corner-time {
-  margin-top: 2px;
-  color: theme.$accent-bright;
-  font-size: 27px;
-  font-weight: 900;
-  text-shadow: 0 0 9px theme.$glow;
-}
-.corner-date {
-  color: theme.$text-muted;
-  font-size: 9px;
-  letter-spacing: 2px;
-}
-.corner-net {
-  margin-top: 4px;
-  color: theme.$text;
-  font-size: 8px;
-}
+.corner-mode { color: theme.$secondary; font-size: 8px; letter-spacing: 3px; }
+.corner-time { margin-top: 2px; color: theme.$accent-bright; font-size: 27px; font-weight: 900; text-shadow: 0 0 9px theme.$glow; }
+.corner-date { color: theme.$text-muted; font-size: 9px; letter-spacing: 2px; }
+.corner-net { margin-top: 4px; color: theme.$text; font-size: 8px; }
 
-.cyberkali-workspace-transition {
-  background: transparent;
+.cyberkali-workspace-transition { background: transparent; }
+
+/* Session / power matrix */
+.power-frame {
+  min-width: 330px;
+  margin: 0 28px 34px 0;
+  padding: 16px 18px;
+  border-right: 5px solid theme.$accent;
+  border-top: 1px solid theme.$accent-bright;
+  background: theme.$surface-strong;
+  box-shadow: 0 0 22px theme.$glow;
 }
+.power-kicker { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
+.power-heading { color: theme.$accent-bright; font-size: 19px; font-weight: 900; text-shadow: 0 0 9px theme.$glow; }
+.power-action, .power-cancel {
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid theme.$accent-dim;
+  color: theme.$text;
+  background: theme.$background-raised;
+  font-size: 10px;
+  font-weight: 800;
+}
+.power-action:hover, .power-action:focus { border-color: theme.$warning; color: theme.$warning; box-shadow: 0 0 8px theme.$glow; }
+.power-cancel { color: theme.$accent; }
+.power-cancel:hover, .power-cancel:focus { border-color: theme.$accent-bright; }
