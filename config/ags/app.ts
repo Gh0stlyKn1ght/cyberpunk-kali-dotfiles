@@ -1,11 +1,12 @@
 import { App } from "./widget.ts"
 import { execAsync } from "astal"
 import GLib from "gi://GLib"
-import { HudWindow } from "./modules/hud.ts"
+import { ProjectedHudWindow } from "./modules/projected-hud.ts"
 import { LauncherWindow, hideLauncher, showLauncher, toggleLauncher } from "./modules/launcher.ts"
 import { NetwatchWindow, hideNetwatch, showNetwatch, toggleNetwatch } from "./modules/netwatch.ts"
 import { MediaWindow, hideMedia, showMedia, toggleMedia } from "./modules/media.ts"
 import { StreetCredWindow, showStreetCred } from "./modules/streetcred.ts"
+import { NotificationWindow, hideNotification, showNotification } from "./modules/notifications.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
 const SCSS = `${ROOT}/styles/main.scss`
@@ -24,6 +25,13 @@ const parseStreetCred = (request: string) => {
   if (!request.startsWith("streetcred|")) return false
   const [, pkg = "", version = ""] = request.split("|", 3)
   showStreetCred(pkg, version)
+  return true
+}
+
+const parseNotification = (request: string) => {
+  if (!request.startsWith("notify|")) return false
+  const [, title = "SYSTEM MESSAGE", body = ""] = request.split("|", 3)
+  showNotification(title, body)
   return true
 }
 
@@ -54,7 +62,9 @@ App.start({
       showMedia(); reply("ok")
     } else if (request === "media-close") {
       hideMedia(); reply("ok")
-    } else if (parseStreetCred(request)) {
+    } else if (request === "notification-close") {
+      hideNotification(); reply("ok")
+    } else if (parseStreetCred(request) || parseNotification(request)) {
       reply("ok")
     } else {
       reply("unknown request")
@@ -62,10 +72,11 @@ App.start({
   },
   main() {
     compileCss()
-    HudWindow()
+    ProjectedHudWindow()
     LauncherWindow()
     NetwatchWindow()
     MediaWindow()
     StreetCredWindow()
+    NotificationWindow()
   },
 })

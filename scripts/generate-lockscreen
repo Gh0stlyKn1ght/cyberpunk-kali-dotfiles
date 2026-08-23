@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CFG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+STATE="$CFG_HOME/cyberkali/flavor"
+OUT="$CFG_HOME/hypr/hyprlock.conf"
+flavor="red"
+[ -r "$STATE" ] && flavor="$(cat "$STATE")"
+
+case "$flavor" in
+  cyan)
+    ACCENT="61f3ff"; TEXT="d9feff"; DIM="4a8d93"; BG="071316" ;;
+  amber)
+    ACCENT="ffb000"; TEXT="ffd466"; DIM="8f6414"; BG="140d02" ;;
+  *)
+    ACCENT="ff2d3d"; TEXT="f4f6f8"; DIM="8a1721"; BG="0b080c" ;;
+esac
+
+cat > "$OUT" <<EOF
+general {
+    hide_cursor = true
+    immediate_render = true
+}
+
+background {
+    monitor =
+    color = rgb(${BG})
+}
+
+label {
+    monitor =
+    text = CYBERKALI // ACCESS CONTROL
+    color = rgb(${ACCENT})
+    font_size = 34
+    font_family = JetBrains Mono
+    position = 0, 160
+    halign = center
+    valign = center
+}
+
+label {
+    monitor =
+    text = <span foreground="#${DIM}">NETWATCH SECURE SESSION</span>
+    color = rgb(${DIM})
+    font_size = 13
+    font_family = JetBrains Mono
+    position = 0, 108
+    halign = center
+    valign = center
+}
+
+input-field {
+    monitor =
+    size = 430, 58
+    outline_thickness = 2
+    dots_size = 0.22
+    dots_spacing = 0.3
+    dots_center = true
+    outer_color = rgb(${ACCENT})
+    inner_color = rgb(${BG})
+    font_color = rgb(${TEXT})
+    fade_on_empty = false
+    placeholder_text = <span foreground="#${DIM}">AUTHORIZATION CODE</span>
+    hide_input = false
+    position = 0, 10
+    halign = center
+    valign = center
+}
+
+label {
+    monitor =
+    text = cmd[update:1000] echo "$(whoami | tr '[:lower:]' '[:upper:]') // $(date +%H:%M:%S)"
+    color = rgb(${TEXT})
+    font_size = 12
+    font_family = JetBrains Mono
+    position = 0, -88
+    halign = center
+    valign = center
+}
+
+label {
+    monitor =
+    text = "UNAUTHORIZED ACCESS WILL BE LOGGED"
+    color = rgb(${DIM})
+    font_size = 10
+    font_family = JetBrains Mono
+    position = 0, -135
+    halign = center
+    valign = center
+}
+EOF
+
+printf 'Generated %s for flavor %s\n' "$OUT" "$flavor"

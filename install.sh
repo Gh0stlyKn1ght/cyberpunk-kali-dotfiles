@@ -30,26 +30,16 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-case "$FLAVOR" in
-  red|cyan|amber) ;;
-  *) fail "Unknown flavor: $FLAVOR"; exit 2 ;;
-esac
+case "$FLAVOR" in red|cyan|amber) ;; *) fail "Unknown flavor: $FLAVOR"; exit 2 ;; esac
 
 printf '%bCYBERKALI // INSTALLER%b\n' "$BOLD" "$RESET"
 printf 'Flavor: %s\n\n' "$FLAVOR"
 
-if ! have apt-get || ! have dpkg-query; then
-  fail "This installer requires an APT/dpkg based Kali or Debian system."
-  exit 1
-fi
-
-if ! is_kali; then
-  warn "Kali was not positively identified from /etc/os-release. Continuing in Debian-compatible mode."
-fi
+if ! have apt-get || ! have dpkg-query; then fail "This installer requires an APT/dpkg based Kali or Debian system."; exit 1; fi
+if ! is_kali; then warn "Kali was not positively identified from /etc/os-release. Continuing in Debian-compatible mode."; fi
 
 info "Refreshing APT metadata"
 if [ "$DRY_RUN" -eq 0 ]; then sudo apt-get update; fi
-
 scan_packages
 
 if [ "$DRY_RUN" -eq 1 ]; then
@@ -61,7 +51,7 @@ if [ "$DRY_RUN" -eq 1 ]; then
   printf 'Missing optional: %s\n' "${MISSING_OPTIONAL[*]:-none}"
   printf 'Unavailable optional: %s\n' "${UNAVAILABLE_OPTIONAL[*]:-none}"
   printf 'Selected flavor: %s\n' "$FLAVOR"
-  printf 'Managed configs: AGS + Hyprland + package watcher\n'
+  printf 'Managed configs: AGS + Hyprland + hyprlock + package watcher\n'
   exit 0
 fi
 
@@ -73,13 +63,10 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 SYSTEMD_USER="$CONFIG_HOME/systemd/user"
 mkdir -p "$CONFIG_HOME/hypr" "$CYBERKALI_CONFIG_DIR/bin" "$HOME/.local/bin" "$SYSTEMD_USER"
 
-# Keep the checkout as the managed source during development. Existing user
-# configs are backed up before managed files replace them.
 safe_link "$ROOT/config/ags" "$CONFIG_HOME/ags"
 safe_link "$ROOT/config/hypr/hyprland.conf" "$CONFIG_HOME/hypr/hyprland.conf"
 safe_link "$ROOT/config/hypr/cyberkali-keybinds.conf" "$CONFIG_HOME/hypr/cyberkali-keybinds.conf"
 
-# Local overrides are user-owned. Never replace them once created.
 if [ ! -e "$CONFIG_HOME/hypr/cyberkali-local.conf" ]; then
   cp "$ROOT/config/hypr/cyberkali-local.conf" "$CONFIG_HOME/hypr/cyberkali-local.conf"
   ok "Created local Hyprland override file"
@@ -88,6 +75,7 @@ fi
 install -m 755 "$ROOT/scripts/launch-shell" "$CYBERKALI_CONFIG_DIR/bin/launch-shell"
 install -m 755 "$ROOT/scripts/toggle-recording" "$CYBERKALI_CONFIG_DIR/bin/toggle-recording"
 install -m 755 "$ROOT/scripts/watch-packages" "$CYBERKALI_CONFIG_DIR/bin/watch-packages"
+install -m 755 "$ROOT/scripts/generate-lockscreen" "$CYBERKALI_CONFIG_DIR/bin/generate-lockscreen"
 install -m 755 "$ROOT/cyberkali" "$HOME/.local/bin/cyberkali"
 
 safe_link "$ROOT/config/systemd/user/cyberkali-package-watch.service" "$SYSTEMD_USER/cyberkali-package-watch.service"
@@ -97,6 +85,7 @@ systemctl --user enable --now cyberkali-package-watch.service || warn "Package S
 printf '%s\n' "$ROOT" > "$CYBERKALI_CONFIG_DIR/root"
 printf '%s\n' "$FLAVOR" > "$CYBERKALI_CONFIG_DIR/flavor"
 bash "$ROOT/cyberkali" flavor "$FLAVOR" --no-reload
+"$CYBERKALI_CONFIG_DIR/bin/generate-lockscreen" || warn "Could not generate initial hyprlock config"
 
 ok "CyberKali base session installed"
 printf '\nNext:\n'
@@ -106,3 +95,4 @@ printf '  SUPER+SPACE opens Kiroshi launcher\n'
 printf '  SUPER+SHIFT+N toggles NetWatch\n'
 printf '  SUPER+SHIFT+O toggles Radioport\n'
 printf '  SUPER+SHIFT+C cycles Red / Cyan / Amber\n'
+printf '  SUPER+SHIFT+L locks the session\n'
