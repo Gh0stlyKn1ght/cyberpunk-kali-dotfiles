@@ -1,6 +1,6 @@
 # Cyberpunk Kali Dotfiles
 
-A Kali Linux / Hyprland desktop shell inspired by Cyberpunk-style HUD interfaces, using AGS/Astal with three switchable visual flavors.
+A Kali Linux + Hyprland desktop shell inspired by cyberpunk HUD interfaces. CyberKali uses AGS/Astal, Cairo drawing, and three shared visual flavors without forking the component architecture.
 
 ## Flavors
 
@@ -8,31 +8,28 @@ A Kali Linux / Hyprland desktop shell inspired by Cyberpunk-style HUD interfaces
 - `cyan` - cold netrunner / Kiroshi edition
 - `amber` - old-school phosphor workstation edition with CRT treatment
 
-All three flavors share the same components. Fixes and features are maintained once.
-
 ## Current features
 
 - Kali Rolling / Debian-aware installer
-- Hyprland session configuration
+- Hyprland session configuration with machine-local overrides
 - pinned AGS v3 / Astal source bootstrap
-- per-monitor projected Cairo HUD surfaces
-- projected corner status widgets on each active monitor
-- CPU, RAM, disk, workspace, interface, IPv4, VPN, time, and mode telemetry
-- Kiroshi application launcher with Kali tool categories
+- per-monitor projected Cairo HUD and corner telemetry
+- CPU, RAM, disk, network, VPN, battery, time, media, and power-profile telemetry
+- Kiroshi launcher with Kali categories, package ownership, versions, binary paths, favorites, and recents
+- APT package search for tools not currently installed
 - NetWatch network-intelligence panel
 - Radioport MPRIS media controls
-- notification toast surface + in-session notification center
-- freedesktop desktop notification intake through AstalNotifd
-- DPKG package watcher with `+ STREET CRED` install events
-- volume, microphone, brightness, Wi-Fi, and Bluetooth controls
+- freedesktop notification intake through AstalNotifd
+- notification center, DND, and app-provided notification actions
+- DPKG `+ STREET CRED` package-install events
+- volume, microphone, brightness, Wi-Fi, Bluetooth, battery, and power-profile controls
 - Power Matrix for lock, logout, suspend, reboot, and poweroff
-- workspace glitch transitions with fail-soft switching
-- HUD top/bottom layer toggle
+- fail-soft workspace glitch transitions
+- HUD layer toggle
 - flavor-aware Hyprlock
-- Amber CRT overlay
-- screenshot and recording helpers
-- config backups and recovery procedures
-- `cyberkali doctor` diagnostics
+- Amber CRT treatment
+- screenshot / recording helpers
+- multi-monitor diagnostics, backups, and recovery procedures
 
 ## Install
 
@@ -46,7 +43,7 @@ chmod +x install.sh
 ./install.sh --flavor red
 ```
 
-The installer may build pinned Astal and AGS components from source, including `AstalNotifd`. Build artifacts are cached under:
+CyberKali may build pinned Astal/AGS components from source, including AstalNotifd. Build state is cached under:
 
 ```text
 ~/.cache/cyberkali/build/
@@ -59,15 +56,17 @@ cyberkali doctor
 cyberkali status
 ```
 
-Then log out and choose the Hyprland session.
+Log out and select the Hyprland session. Keep Kali's normal desktop session installed as a recovery path.
 
-## Controls
+## Main controls
 
 ```text
 SUPER + Space       Kiroshi launcher
 SUPER + Return      Kitty terminal
 SUPER + E           File manager
-SUPER + 1..0        Workspace switch + glitch effect
+SUPER + 1..0        Workspace switch + glitch
+SUPER + SHIFT + A   Latest notification actions
+SUPER + SHIFT + D   Toggle CyberKali DND
 SUPER + SHIFT + N   NetWatch
 SUPER + SHIFT + O   Radioport
 SUPER + SHIFT + M   Notification center
@@ -94,16 +93,51 @@ cyberkali media
 cyberkali messages
 cyberkali controls
 cyberkali power
+cyberkali notification-actions
+cyberkali dnd
 cyberkali hud-layer
+cyberkali monitors
 cyberkali workspace-test 2
 cyberkali notify-test "SYSTEM TEST" "notification path operational"
 cyberkali streetcred-test nmap test
-cyberkali monitors
+cyberkali tool-search wireshark
+cyberkali favorite add nmap
+cyberkali favorite remove nmap
+cyberkali favorite list
 cyberkali start
 cyberkali stop
 cyberkali restart
 cyberkali status
 cyberkali doctor
+```
+
+## Kiroshi Kali intelligence
+
+Kiroshi indexes installed desktop applications and enriches visible results locally with:
+
+- Kali-style tool category
+- resolved executable path
+- owning Debian/Kali package
+- installed package version
+- favorite state
+- recent launch ordering
+
+Favorites live in:
+
+```text
+~/.config/cyberkali/favorites
+```
+
+Recent launcher state lives in:
+
+```text
+~/.config/cyberkali/recent-tools
+```
+
+Kiroshi does **not** silently install packages. To search Kali/APT metadata for an uninstalled tool:
+
+```bash
+cyberkali tool-search nuclei
 ```
 
 ## Architecture
@@ -112,35 +146,33 @@ cyberkali doctor
 Kali Rolling
     |
     +-- Hyprland
-    |     +-- managed session config
-    |     +-- local machine overrides
-    |     +-- flavor-aware Hyprlock
+    |     +-- managed shared config
+    |     +-- cyberkali-local.conf
+    |     +-- Hyprlock
     |
     +-- AGS / Astal
     |     +-- per-monitor Cairo HUD
-    |     +-- corner telemetry
-    |     +-- Kiroshi launcher
-    |     +-- NetWatch
-    |     +-- Radioport
-    |     +-- notification daemon/proxy bridge
-    |     +-- notification center
-    |     +-- system controls
-    |     +-- Power Matrix
+    |     +-- Kiroshi Kali intelligence
+    |     +-- NetWatch / Radioport
+    |     +-- AstalNotifd bridge
+    |     +-- notification actions + DND
+    |     +-- system / power controls
     |     +-- Street Cred
-    |     +-- workspace / CRT effects
+    |     +-- workspace + CRT effects
     |
-    +-- user service
-    |     +-- dpkg package event watcher
+    +-- user services
+    |     +-- dpkg package watcher
     |
     +-- CyberKali CLI
           +-- diagnostics
-          +-- shell lifecycle
-          +-- flavor and overlay controls
+          +-- lifecycle / recovery
+          +-- flavor / overlay controls
+          +-- package search / favorites
 ```
 
 ## Source runtime policy
 
-CyberKali does not follow AGS/Astal `main` during installation. `dependencies.lock` pins known revisions so upstream changes do not silently alter a tested install.
+CyberKali does not follow AGS/Astal `main` at install time. `dependencies.lock` pins known revisions so upstream changes do not silently mutate a previously tested install.
 
 # Troubleshooting and recovery
 
@@ -150,9 +182,9 @@ Recovery is a first-class feature. Do not start by purging Kali packages. Work o
 Hyprland -> session environment / portals -> AGS/Astal -> CyberKali component
 ```
 
-## First response: get a shell
+## First response
 
-If Hyprland works but the CyberKali shell does not:
+If Hyprland works but CyberKali does not:
 
 ```bash
 cyberkali doctor
@@ -161,16 +193,16 @@ cyberkali restart
 tail -n 200 ~/.local/state/cyberkali/ags.log
 ```
 
-If the graphical session is unusable, switch to a TTY with `CTRL+ALT+F2`, log in, and stop the shell:
+If the graphical session is unusable, switch to a TTY with `CTRL+ALT+F2` and stop the custom shell:
 
 ```bash
 pkill -f 'ags run.*config/ags/app.ts' || true
 systemctl --user stop cyberkali-package-watch.service || true
 ```
 
-You can then log out and choose Kali's normal desktop session.
+Then return to Kali's normal desktop session.
 
-## Black screen or Hyprland exits
+## Hyprland black screen or immediate exit
 
 ```bash
 hyprctl version
@@ -178,32 +210,30 @@ hyprctl configerrors
 find "${XDG_RUNTIME_DIR:-/run/user/$UID}/hypr" -type f -name 'hyprland.log' -print
 ```
 
-CyberKali backs up managed files under:
+Backups are stored under:
 
 ```text
 ~/.local/state/cyberkali/backups/
 ```
 
-Find the latest backup:
+Check the last backup location:
 
 ```bash
 cat ~/.local/state/cyberkali/latest-backup
 ```
 
-Restore a previous `hyprland.conf` only after confirming the backup contains it.
+Do not delete Kali's display manager or normal desktop environment while diagnosing CyberKali.
 
-## Multi-monitor HUD is missing, duplicated, or positioned incorrectly
+## Multi-monitor HUD missing, duplicated, or mis-scaled
 
-CyberKali enumerates active monitors when AGS starts.
-
-Inspect the layout:
+CyberKali enumerates monitors when AGS starts.
 
 ```bash
 cyberkali monitors
 hyprctl monitors -j | jq
 ```
 
-After plugging, unplugging, rotating, or changing scale:
+After hotplug, rotation, resolution, or scale changes:
 
 ```bash
 cyberkali restart
@@ -215,87 +245,13 @@ Machine-specific monitor rules belong in:
 ~/.config/hypr/cyberkali-local.conf
 ```
 
-Do not hard-code one computer's monitor geometry into the shared repository.
-
-If the HUD itself is unusable but Hyprland is fine:
+If the HUD is unusable but Hyprland works:
 
 ```bash
 cyberkali stop
 ```
 
-This removes AGS surfaces without stopping the compositor.
-
-## Mixed-DPI or mixed-resolution displays
-
-Check each scale and logical geometry:
-
-```bash
-cyberkali monitors
-```
-
-If an overlay is clipped or oversized after a scale change, restart AGS. Current multi-monitor surfaces are created at shell startup rather than dynamically rebuilt for every hotplug event.
-
-## Desktop notifications do not appear
-
-CyberKali uses pinned `AstalNotifd` to receive/proxy `org.freedesktop.Notifications`.
-
-```bash
-pkg-config --modversion astal-notifd-0.1
-busctl --user status org.freedesktop.Notifications
-notify-send 'CyberKali test' 'desktop notification path'
-tail -n 100 ~/.local/state/cyberkali/ags.log
-```
-
-If `AstalNotifd` is missing:
-
-```bash
-rm -rf ~/.cache/cyberkali/build
-./install.sh
-```
-
-## dunst, mako, or another notification daemon conflicts
-
-CyberKali does not automatically disable another daemon.
-
-```bash
-systemctl --user --type=service | grep -Ei 'dunst|mako|notif'
-pgrep -a -f 'dunst|mako|notification'
-busctl --user status org.freedesktop.Notifications
-```
-
-For a temporary CyberKali-only notification test:
-
-```bash
-systemctl --user stop dunst.service 2>/dev/null || true
-systemctl --user stop mako.service 2>/dev/null || true
-cyberkali restart
-notify-send 'CyberKali test' 'single notification owner test'
-```
-
-Do not permanently disable your previous daemon until CyberKali notifications work after a fresh login.
-
-Rollback:
-
-```bash
-cyberkali stop
-systemctl --user start dunst.service 2>/dev/null || true
-systemctl --user start mako.service 2>/dev/null || true
-```
-
-Duplicate popups usually mean two presentation paths are active.
-
-## Notification center is empty
-
-The message buffer is intentionally in-memory and clears when AGS restarts.
-
-```bash
-cyberkali notify-test "TEST" "message buffer test"
-cyberkali messages
-```
-
-This is not a persistent notification database.
-
-## AGS starts with `Typelib ... not found`
+## AGS/Astal missing typelib or ABI errors
 
 ```bash
 ags run ~/.config/ags/app.ts
@@ -307,7 +263,7 @@ find /usr/local -name '*.typelib' | grep -E 'Astal|Gnim'
 echo "$GI_TYPELIB_PATH"
 ```
 
-Log out and back in after a source build so `~/.profile` is reloaded.
+After a source install, log out and back in so `~/.profile` is reloaded.
 
 Temporary current-shell recovery:
 
@@ -317,9 +273,9 @@ export LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib/x86_64-linux-gnu${LD_LIBRA
 cyberkali restart
 ```
 
-Do not symlink incompatible versioned `.so` files to hide ABI errors. Rebuild the pinned runtime.
+Do not hide ABI errors by symlinking incompatible versioned `.so` files.
 
-## AGS/Astal build fails
+## AGS/Astal source build fails
 
 ```bash
 sudo apt update
@@ -328,7 +284,7 @@ sudo dpkg --configure -a
 ./install.sh --dry-run
 ```
 
-If the CyberKali build cache is corrupted:
+If only CyberKali's build cache is corrupt:
 
 ```bash
 rm -rf ~/.cache/cyberkali/build
@@ -337,36 +293,144 @@ rm -rf ~/.cache/cyberkali/build
 
 Do not remove `/usr/local` wholesale.
 
-## Portals, screen sharing, or Wayland apps are broken
+## Desktop notifications missing or duplicated
 
 ```bash
-systemctl --user status xdg-desktop-portal-hyprland
-systemctl --user status xdg-desktop-portal
-journalctl --user -u xdg-desktop-portal-hyprland -b --no-pager
+pkg-config --modversion astal-notifd-0.1
+busctl --user status org.freedesktop.Notifications
+notify-send 'CyberKali test' 'desktop notification path'
+pgrep -a -f 'dunst|mako|notification'
+tail -n 100 ~/.local/state/cyberkali/ags.log
 ```
 
-Refresh the environment:
+CyberKali does not automatically disable dunst, mako, or another daemon. Duplicate popups usually mean multiple presentation paths are active.
+
+Temporary isolation test:
 
 ```bash
-dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
-systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
-systemctl --user restart xdg-desktop-portal-hyprland.service || true
-systemctl --user restart xdg-desktop-portal.service || true
+systemctl --user stop dunst.service 2>/dev/null || true
+systemctl --user stop mako.service 2>/dev/null || true
+cyberkali restart
+notify-send 'CyberKali test' 'single notification owner test'
 ```
 
-Do not install random competing portal backends as a first fix.
-
-## Screenshots or recordings are black
+Rollback:
 
 ```bash
-command -v grim slurp wf-recorder wl-copy
-grim /tmp/cyberkali-test.png
-grim -g "$(slurp)" /tmp/cyberkali-region.png
+cyberkali stop
+systemctl --user start dunst.service 2>/dev/null || true
+systemctl --user start mako.service 2>/dev/null || true
 ```
 
-If direct capture fails while portal-based sharing works, inspect Hyprland screencopy permissions and compositor configuration.
+## Notification action buttons do nothing
 
-## NetWatch looks wrong
+Only actions supplied by the sending application can be invoked.
+
+```bash
+cyberkali notification-actions
+tail -n 150 ~/.local/state/cyberkali/ags.log
+```
+
+If there are no actions, the notification did not provide any. If an action exists but does nothing, the original application may already have exited.
+
+## DND does not suppress all popups
+
+```bash
+cyberkali dnd
+busctl --user status org.freedesktop.Notifications
+pgrep -a -f 'dunst|mako|notification'
+```
+
+CyberKali DND controls CyberKali's AstalNotifd presentation. Another running notification daemon may still present its own popups.
+
+## Kiroshi metadata is wrong, stale, or slow
+
+Check the binary/package directly:
+
+```bash
+command -v nmap
+dpkg-query -S "$(command -v nmap)"
+dpkg-query -W nmap
+```
+
+Metadata is cached for the running AGS process. Clear the runtime cache by restarting:
+
+```bash
+cyberkali restart
+```
+
+Reset only recent launcher state if needed:
+
+```bash
+rm -f ~/.config/cyberkali/recent-tools
+cyberkali restart
+```
+
+Do not purge packages to repair launcher metadata.
+
+## Favorite does not move to the top
+
+```bash
+cyberkali favorite list
+cyberkali favorite add nmap
+cyberkali restart
+```
+
+The favorites file is `~/.config/cyberkali/favorites`.
+
+## Tool is not installed / not visible in Kiroshi
+
+Kiroshi primarily indexes installed applications. Search APT metadata separately:
+
+```bash
+cyberkali tool-search <term>
+apt-cache search --names-only <term>
+```
+
+Installation remains an explicit admin action.
+
+## System controls show N/A
+
+```bash
+wpctl status
+brightnessctl -m
+nmcli radio
+bluetoothctl show
+powerprofilesctl get
+upower -e
+```
+
+Expected cases include:
+
+- desktops/VMs with no brightness device
+- no Bluetooth adapter
+- no virtual battery
+- hardware that does not expose every power profile
+- PipeWire/WirePlumber not running
+- interfaces unmanaged by NetworkManager
+
+Do not run AGS as root to make controls work.
+
+## Power profiles unavailable
+
+```bash
+command -v powerprofilesctl
+powerprofilesctl get
+systemctl status power-profiles-daemon --no-pager
+```
+
+CyberKali should continue normally if power-profile support is unavailable.
+
+## Side-panel traffic looks wrong after VPN/dock/network changes
+
+```bash
+ip route
+ip -brief address
+cat /proc/net/dev
+cyberkali restart
+```
+
+## NetWatch incorrect
 
 ```bash
 ip route
@@ -386,46 +450,36 @@ playerctl status
 playerctl metadata
 ```
 
-If `playerctl -l` is empty, the application is not exposing an MPRIS player.
+If `playerctl -l` is empty, the application is not exposing MPRIS.
 
-## System control shows N/A
-
-```bash
-wpctl status
-brightnessctl -m
-nmcli radio
-bluetoothctl show
-```
-
-Common expected cases:
-
-- desktops and some VMs have no brightness device
-- VMs may have no Bluetooth adapter
-- PipeWire/WirePlumber may not be active
-- NetworkManager may not own a manually configured interface
-
-Do not run AGS as root to make a control button work.
-
-## Power Matrix action fails
-
-The panel delegates to normal session tools.
+## Portals / screen sharing / Wayland apps broken
 
 ```bash
-loginctl lock-session
-systemctl suspend
-systemctl status systemd-logind --no-pager
+systemctl --user status xdg-desktop-portal-hyprland
+systemctl --user status xdg-desktop-portal
+journalctl --user -u xdg-desktop-portal-hyprland -b --no-pager
 ```
 
-Reboot and poweroff still follow the system's normal logind/polkit rules. CyberKali does not bypass them.
-
-If the panel itself is broken, use the standard commands from a terminal:
+Refresh the session environment:
 
 ```bash
-loginctl lock-session
-systemctl suspend
-systemctl reboot
-systemctl poweroff
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
+systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE
+systemctl --user restart xdg-desktop-portal-hyprland.service || true
+systemctl --user restart xdg-desktop-portal.service || true
 ```
+
+Do not install random competing portal backends as a first fix.
+
+## Screenshots or recordings are black
+
+```bash
+command -v grim slurp wf-recorder wl-copy
+grim /tmp/cyberkali-test.png
+grim -g "$(slurp)" /tmp/cyberkali-region.png
+```
+
+If direct capture fails while portal sharing works, inspect Hyprland screencopy permissions and compositor configuration.
 
 ## Street Cred does not trigger
 
@@ -434,16 +488,6 @@ systemctl --user status cyberkali-package-watch.service
 journalctl --user -u cyberkali-package-watch.service -b --no-pager
 tail -n 20 /var/log/dpkg.log
 cyberkali streetcred-test nmap test
-```
-
-## Flavor switching is partial
-
-```bash
-cyberkali flavor amber
-cyberkali restart
-cat ~/.config/cyberkali/flavor
-sassc ~/.config/ags/styles/main.scss /tmp/cyberkali.css
-sassc ~/.config/ags/styles/fidelity.scss /tmp/cyberkali-fidelity.css
 ```
 
 ## Lock screen fails
@@ -460,9 +504,9 @@ Safe fallback:
 loginctl lock-session
 ```
 
-Never weaken PAM just to make the themed lock screen work.
+Never weaken PAM for a themed lock screen.
 
-## Kali Rolling upgrade breaks the shell
+## Kali Rolling upgrade breaks CyberKali
 
 ```bash
 cyberkali doctor
@@ -472,14 +516,14 @@ pkg-config --modversion astal-3.0
 pkg-config --modversion astal-notifd-0.1
 ```
 
-If AGS/Astal ABI state is inconsistent:
+If the pinned AGS/Astal runtime is inconsistent:
 
 ```bash
 rm -rf ~/.cache/cyberkali/build
 ./install.sh
 ```
 
-If Hyprland itself is broken, use Kali's normal desktop until the compositor/runtime issue is resolved.
+Use Kali's normal desktop if Hyprland itself is broken.
 
 ## Emergency rollback
 
@@ -502,7 +546,7 @@ readlink ~/.config/hypr/cyberkali-keybinds.conf || true
 4. Restore prior configs from `~/.local/state/cyberkali/backups/`.
 5. Log out and choose Kali's normal desktop session.
 
-Do not purge the display manager, Xfce/GNOME, NetworkManager, PipeWire, or other base Kali desktop components as a troubleshooting step.
+Do not purge the display manager, Xfce/GNOME, NetworkManager, PipeWire, or other base desktop components as a troubleshooting step.
 
 ## Diagnostic bundle
 
@@ -520,6 +564,10 @@ systemctl --user status cyberkali-package-watch.service --no-pager
 tail -n 150 ~/.local/state/cyberkali/ags.log
 ```
 
-Do not post tokens, SSH keys, VPN credentials, browser profiles, `/etc/shadow`, or full environment-variable dumps in bug reports.
+Do not post tokens, SSH keys, VPN credentials, browser profiles, `/etc/shadow`, or complete environment-variable dumps in bug reports.
 
-Additional focused recovery notes are in `docs/FIDELITY-RECOVERY.md` and `docs/MULTIMON-NOTIFICATION-RECOVERY.md`.
+Focused recovery documents:
+
+- `docs/FIDELITY-RECOVERY.md`
+- `docs/MULTIMON-NOTIFICATION-RECOVERY.md`
+- `docs/KALI-INTELLIGENCE-RECOVERY.md`
