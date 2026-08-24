@@ -12,6 +12,7 @@ export CYBERKALI_ROOT="$ROOT"
 . "$ROOT/installer/common.sh"
 . "$ROOT/installer/packages.sh"
 AGS_INSTANCE="cyberkali"
+FAVORITES_FILE="$CYBERKALI_CONFIG_DIR/favorites"
 
 usage() {
   cat <<'EOF'
@@ -22,11 +23,15 @@ Usage:
   cyberkali cycle
   cyberkali start|stop|restart
   cyberkali launcher|netwatch|media|messages|controls|power
+  cyberkali notification-actions
+  cyberkali dnd
   cyberkali hud-layer
   cyberkali workspace-test [1..10]
   cyberkali notify-test [title] [body]
   cyberkali streetcred-test [package] [version]
   cyberkali monitors
+  cyberkali tool-search <term>
+  cyberkali favorite add|remove|list [binary]
   cyberkali doctor
   cyberkali status
 EOF
@@ -58,16 +63,44 @@ monitor_report() {
   hyprctl monitors -j | jq -r '.[] | "\(.name)  \(.width)x\(.height)@\(.refreshRate|floor)  scale=\(.scale)  pos=\(.x),\(.y)  workspace=\(.activeWorkspace.id)"'
 }
 
+tool_search() {
+  local q="${*:-}"
+  [ -n "$q" ] || { fail "Usage: cyberkali tool-search <term>"; return 2; }
+  printf '%bCYBERKALI // KALI PACKAGE SEARCH%b\n' "$BOLD" "$RESET"
+  apt-cache search --names-only "$q" 2>/dev/null | head -n 30
+}
+
+favorite_cmd() {
+  local op="${1:-list}" item="${2:-}"
+  ensure_dirs
+  touch "$FAVORITES_FILE"
+  case "$op" in
+    list) grep -v '^$' "$FAVORITES_FILE" || true ;;
+    add)
+      [ -n "$item" ] || { fail "Usage: cyberkali favorite add <binary>"; return 2; }
+      grep -Fxq "$item" "$FAVORITES_FILE" || printf '%s\n' "$item" >> "$FAVORITES_FILE"
+      ok "Favorite added: $item"
+      ;;
+    remove)
+      [ -n "$item" ] || { fail "Usage: cyberkali favorite remove <binary>"; return 2; }
+      tmp="${FAVORITES_FILE}.tmp"
+      grep -Fxv "$item" "$FAVORITES_FILE" > "$tmp" || true
+      mv "$tmp" "$FAVORITES_FILE"
+      ok "Favorite removed: $item"
+      ;;
+    *) fail "favorite expects add, remove, or list"; return 2 ;;
+  esac
+}
+
 status() {
   printf '%bCYBERKALI // STATUS%b\n' "$BOLD" "$RESET"
   printf 'root       %s\n' "$ROOT"
   printf 'flavor     %s\n' "$(current_flavor)"
   printf 'hyprland   %s\n' "$(have hyprctl && echo detected || echo missing)"
   printf 'ags        %s\n' "$(have ags && echo detected || echo missing)"
-  printf 'astal io   %s\n' "$(pkg-config --exists astal-io-0.1 2>/dev/null && echo detected || echo missing)"
-  printf 'astal gtk3 %s\n' "$(pkg-config --exists astal-3.0 2>/dev/null && echo detected || echo missing)"
-  printf 'astal gtk4 %s\n' "$(pkg-config --exists astal-4.0 2>/dev/null && echo detected || echo missing)"
   printf 'notifd     %s\n' "$(pkg-config --exists astal-notifd-0.1 2>/dev/null && echo detected || echo missing)"
+  printf 'powerprof  %s\n' "$(have powerprofilesctl && powerprofilesctl get 2>/dev/null || echo unavailable)"
+  printf 'favorites  %s\n' "$([ -r "$FAVORITES_FILE" ] && grep -cv '^$' "$FAVORITES_FILE" || echo 0)"
   if have hyprctl; then printf 'monitors   %s\n' "$(hyprctl monitors -j 2>/dev/null | jq 'length' 2>/dev/null || echo unknown)"; fi
   if have pgrep && pgrep -f 'ags run.*config/ags/app.ts' >/dev/null 2>&1; then printf 'shell      running\n'; else printf 'shell      stopped\n'; fi
   if have systemctl && systemctl --user is-active --quiet cyberkali-package-watch.service 2>/dev/null; then printf 'pkg watcher active\n'; else printf 'pkg watcher inactive\n'; fi
@@ -77,12 +110,12 @@ doctor() {
   local failures=0 warnings=0 command package
   printf '%bCYBERKALI // SYSTEM DIAGNOSTICS%b\n\n' "$BOLD" "$RESET"
   if is_kali; then ok "Kali/Debian base detected"; else warn "Kali not positively identified"; warnings=$((warnings+1)); fi
-  for command in hyprctl gjs sassc grim slurp wf-recorder wl-copy nmcli wpctl playerctl jq ip loginctl systemctl; do
+  for command in hyprctl gjs sassc grim slurp wf-recorder wl-copy nmcli wpctl playerctl jq ip loginctl systemctl apt-cache dpkg-query; do
     if have "$command"; then ok "$command"; else
-      case "$command" in hyprctl|gjs|sassc|nmcli|wpctl|ip|loginctl|systemctl) fail "$command missing"; failures=$((failures+1)) ;; *) warn "$command missing, related feature will be disabled"; warnings=$((warnings+1)) ;; esac
+      case "$command" in hyprctl|gjs|sassc|nmcli|wpctl|ip|loginctl|systemctl|apt-cache|dpkg-query) fail "$command missing"; failures=$((failures+1)) ;; *) warn "$command missing, related feature will be disabled"; warnings=$((warnings+1)) ;; esac
     fi
   done
-  for command in brightnessctl bluetoothctl; do if have "$command"; then ok "$command optional control"; else warn "$command missing; related system control will show N/A"; warnings=$((warnings+1)); fi; done
+  for command in brightnessctl bluetoothctl powerprofilesctl; do if have "$command"; then ok "$command optional control"; else warn "$command missing; related control will show N/A"; warnings=$((warnings+1)); fi; done
   if have ags; then ok "AGS runtime"; else fail "AGS runtime missing"; failures=$((failures+1)); fi
   for pc in astal-io-0.1 astal-3.0 astal-4.0 astal-notifd-0.1; do if pkg-config --exists "$pc" 2>/dev/null; then ok "$pc"; else fail "$pc missing"; failures=$((failures+1)); fi; done
   if have hyprctl; then
@@ -97,7 +130,6 @@ doctor() {
   for package in "${MISSING_BUILD[@]}"; do warn "Source-build dependency not installed: $package"; warnings=$((warnings+1)); done
   if [ -n "${WAYLAND_DISPLAY:-}" ]; then ok "Wayland session: $WAYLAND_DISPLAY"; else warn "Not currently inside a Wayland session"; warnings=$((warnings+1)); fi
   [ -r "$ROOT/config/ags/app.ts" ] && ok "AGS app entrypoint" || { fail "AGS app entrypoint missing"; failures=$((failures+1)); }
-  [ -x "$CYBERKALI_CONFIG_DIR/bin/workspace-switch" ] && ok "Workspace transition wrapper" || { warn "workspace-switch helper missing"; warnings=$((warnings+1)); }
   [ -r /var/log/dpkg.log ] && ok "dpkg event log readable" || { warn "dpkg log unavailable; Street Cred watcher disabled"; warnings=$((warnings+1)); }
   printf '\nDiagnostics: %d failure(s), %d warning(s)\n' "$failures" "$warnings"
   [ "$failures" -eq 0 ]
@@ -110,11 +142,15 @@ case "$command" in
   start) start_shell ;; stop) stop_shell ;; restart) reload_shell ;;
   launcher|netwatch|media|controls|power) request_shell "$command" ;;
   messages) request_shell notifications ;;
+  notification-actions) request_shell notification-actions ;;
+  dnd) request_shell notification-dnd ;;
   hud-layer) request_shell hud-layer ;;
   workspace-test) request_shell "workspace-glitch|${1:-1}" ;;
   notify-test) request_shell "notify|${1:-SYSTEM TEST}|${2:-CyberKali notification path operational}" ;;
   streetcred-test) request_shell "streetcred|${1:-nmap}|${2:-test}" ;;
   monitors) monitor_report ;;
+  tool-search) tool_search "$@" ;;
+  favorite) favorite_cmd "$@" ;;
   doctor) doctor ;; status) status ;;
   help|-h|--help) usage ;;
   *) fail "Unknown command: $command"; usage; exit 2 ;;
