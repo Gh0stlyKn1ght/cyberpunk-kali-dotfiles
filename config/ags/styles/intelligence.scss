@@ -1,0 +1,31 @@
+@use "active" as theme;
+
+.kiroshi-category-block { min-width: 180px; }
+.kiroshi-category { min-width: 170px; color: theme.$secondary; font-size: 8px; font-weight: 800; }
+.kiroshi-status { margin-top: 2px; color: theme.$accent; font-size: 7px; letter-spacing: 1px; }
+.kiroshi-package { color: theme.$secondary; font-size: 7px; }
+
+.notification-action-frame {
+  min-width: 460px;
+  margin: 28px 28px 0 0;
+  padding: 14px 16px;
+  border-left: 5px solid theme.$accent;
+  border-top: 1px solid theme.$accent-bright;
+  background: theme.$surface-strong;
+  box-shadow: 0 0 18px theme.$glow;
+}
+.notification-action-kicker { color: theme.$secondary; font-size: 8px; letter-spacing: 2px; }
+.notification-action-title { color: theme.$accent-bright; font-size: 14px; font-weight: 900; }
+.notification-action-button,
+.notification-action-close {
+  padding: 7px 10px;
+  border: 1px solid theme.$accent-dim;
+  color: theme.$accent;
+  background: theme.$background-raised;
+  font-size: 9px;
+  font-weight: 800;
+}
+.notification-action-button:hover,
+.notification-action-button:focus { border-color: theme.$accent-bright; box-shadow: 0 0 8px theme.$glow; }
+.notification-action-close { margin-top: 4px; color: theme.$text-muted; }
+.notification-action-empty { padding: 8px 0; color: theme.$text-muted; font-size: 8px; }
