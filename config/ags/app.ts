@@ -8,13 +8,14 @@ import { MediaWindow, hideMedia, showMedia, toggleMedia } from "./modules/media.
 import { StreetCredWindow, showStreetCred } from "./modules/streetcred.ts"
 import { NotificationWindow, hideNotification, showNotification } from "./modules/notifications.ts"
 import { NotificationCenterWindow, pushNotice, toggleNotificationCenter } from "./modules/notification-center.ts"
+import { NotificationActionsWindow, toggleNotificationActions } from "./modules/notification-actions.ts"
 import { SystemControlsWindow, toggleSystemControls } from "./modules/system-controls.ts"
 import { CornerWidgets } from "./modules/corner-widgets.ts"
 import { WorkspaceTransitionWindow, triggerWorkspaceTransition } from "./modules/workspace-transition.ts"
 import { CrtOverlayWindow } from "./modules/crt-overlay.ts"
 import { monitors } from "./modules/monitors.ts"
 import { PowerMenuWindow, togglePowerMenu } from "./modules/power-menu.ts"
-import { startDesktopNotificationBridge } from "./modules/desktop-notifications.ts"
+import { startDesktopNotificationBridge, toggleNotificationDnd } from "./modules/desktop-notifications.ts"
 import { SystemSidePanel } from "./modules/system-sidepanel.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
@@ -62,6 +63,8 @@ App.start({
     else if (request === "media-open") { showMedia(); reply("ok") }
     else if (request === "media-close") { hideMedia(); reply("ok") }
     else if (request === "notifications") { toggleNotificationCenter(); reply("ok") }
+    else if (request === "notification-actions") { toggleNotificationActions(); reply("ok") }
+    else if (request === "notification-dnd") { reply(toggleNotificationDnd()) }
     else if (request === "controls") { toggleSystemControls(); reply("ok") }
     else if (request === "power") { togglePowerMenu(); reply("ok") }
     else if (request === "hud-layer") reply(toggleHudLayer())
@@ -89,6 +92,7 @@ App.start({
     StreetCredWindow()
     NotificationWindow()
     NotificationCenterWindow()
+    NotificationActionsWindow()
     SystemControlsWindow()
     PowerMenuWindow()
     startDesktopNotificationBridge()
