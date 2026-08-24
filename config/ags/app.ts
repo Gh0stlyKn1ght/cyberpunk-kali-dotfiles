@@ -19,17 +19,16 @@ import { startDesktopNotificationBridge, toggleNotificationDnd } from "./modules
 import { SystemSidePanel } from "./modules/system-sidepanel.ts"
 
 const ROOT = `${GLib.get_user_config_dir()}/ags`
-const SCSS = `${ROOT}/styles/main.scss`
-const CSS = `${ROOT}/styles/main.css`
-const FIDELITY_SCSS = `${ROOT}/styles/fidelity.scss`
-const FIDELITY_CSS = `${ROOT}/styles/fidelity.css`
+const styles = ["main", "fidelity", "intelligence"]
 
 const compileCss = async () => {
   try {
-    await execAsync(["sassc", SCSS, CSS])
-    await execAsync(["sassc", FIDELITY_SCSS, FIDELITY_CSS])
-    App.apply_css(CSS, true)
-    App.apply_css(FIDELITY_CSS, true)
+    for (const name of styles) {
+      const scss = `${ROOT}/styles/${name}.scss`
+      const css = `${ROOT}/styles/${name}.css`
+      await execAsync(["sassc", scss, css])
+      App.apply_css(css, true)
+    }
   } catch (error) { print(`[cyberkali] stylesheet compile failed: ${error}`) }
 }
 
